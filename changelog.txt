@@ -1,0 +1,49 @@
+Added dih patch from David Carr - 8/28/2005 Darrell Harmon
+
+1/6/2007
+Bugfix from David Carr to correct row and col reversal in BGA omitballs
+Several improvements sent to me by Peter Baxendale, with some modification
+by DLH: Square pin 1 on all through hole, optional inside silkscreen on
+SO parts with diagonal corner for pin 1, to enable use silkstyle = "inside",
+disabled by default or use silkstyle = "none"
+
+9/28/2008
+Added patch by David Carr to add silkstyle="corners" option on qfp
+set silkboxwidth and silkboxheigh if using this style
+
+9/28/2008
+Added refdesx and refdesy attributes which allow the reference designator to be positioned as desired
+Previously the reference designator was located at the origin. This is still the default.
+
+9/29/2008
+Allow negative numbers in footprint definition file
+
+10/22/2008
+added "skew" option to SO
+take out debug print for expandedlist
+
+2/9/2009 DLH
+allow exposed pads on SO parts
+added "rect" option
+if "rect" is set, it will create a rectangular exposed pad. It must be >= to the ep value.
+It sets the height, and is only available in so at this time.
+
+2/24/2009 DLH
+Added support for silkboxwidth and silkboxheight to sip, dip
+
+4/29/2009
+Applied bugfix patch for dih from Levente Kovacs
+Applied patch adding dihf (double row receptacle) from Levente Kovacs
+
+20120731 Stephen Ecob
+Changed fundamental units from centimils to nanometers
+Changed flags from integers to strings (as per newer format)
+Changed a few hard coded distances from values such as
+1000, 4000 or 3940 (centimils) to 1000000nm.  These hard
+coded distances are still ugly, but now at least they are
+metric ugly instead of imperial ugly
+
+20120830 Larry Doolittle
+Add attribute "lefthand" to support both genders of BGA connectors
+Embed the filename in the file, helps when inspecting the resulting PCB layout file
+Deleted trailing spaces
