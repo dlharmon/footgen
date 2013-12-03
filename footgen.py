@@ -70,6 +70,11 @@
 # Embed the filename in the file, helps when inspecting the resulting PCB layout file
 # Deleted trailing spaces
 
+# 20130819 Dmitry Teytelman
+# Moved pin A1 marker for BGA with "lefthand" attribute to A1 location
+# Changed notch size for inside SO outline from 1000 to 254000 (missed in centimils to
+# nanometers conversion?)
+
 # list of attributes to be defined in file
 def defattr():
     return [["elementdir",""],
@@ -238,9 +243,9 @@ def box(x1, y1, x2, y2, width):
 # draws silkscreen box for SO or QFP type parts with notched pin #1 corner
 def insidebox(x1, y1, x2, y2, width):
     return silk(x1,y1,x2,y1,width)+\
-           silk(x2,y1,x2,y2+1000,width)+\
-           silk(x2,y2+1000,x2+1000,y2,width)+\
-           silk(x2+1000,y2,x1,y2,width)+\
+           silk(x2,y1,x2,y2+254000,width)+\
+           silk(x2,y2+254000,x2+254000,y2,width)+\
+           silk(x2+254000,y2,x1,y2,width)+\
            silk(x1,y2,x1,y1,width)
 
 def bga(attrlist):
@@ -270,7 +275,11 @@ def bga(attrlist):
     # silkscreen outline
     bgaelt = bgaelt + box(silkboxx,silkboxy,-silkboxx,-silkboxy,silkwidth)
     # pin 1 indicator 1mm long tick
-    bgaelt = bgaelt + silk(-silkboxx, -silkboxy, -(silkboxx+1000000), -(silkboxy+1000000), silkwidth)
+    if lefthand:
+      ysign = 1
+    else:
+      ysign = -1
+    bgaelt = bgaelt + silk(-silkboxx, ysign*silkboxy, -(silkboxx+1000000), ysign*(silkboxy+1000000), silkwidth)
     # position of ball A1
     xoff = -int((cols+1)*pitch/2)
     yoff = -int((rows+1)*pitch/2)
