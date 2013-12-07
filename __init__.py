@@ -225,6 +225,9 @@ class Footgen():
         self.silkbox(silkx,silky)
         if self.mirror:
             silkx *= -1
+        if self.width == 0:
+            silkx *= 0.5
+            silky *= 0.5
         self.box_corners(-silkx,-silky,-silkx+self.pitch,-silky+self.pitch)
 
     def dih(self):
