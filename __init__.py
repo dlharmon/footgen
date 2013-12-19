@@ -220,14 +220,11 @@ class Footgen():
             for pinnum in range (1+self.pins/2, self.pins+1):
                 self.generator.add_pad(x,y,str(pinnum))
                 y -= self.pitch
-        silky = max(self.pins*self.pitch*0.5,self.silkboxheight)
-        silkx = max((self.width+self.pitch),self.silkboxwidth)
-        self.silkbox(silkx,silky)
+        silky = max(self.pins*self.pitch*0.25,self.silkboxheight*0.5)
+        silkx = max((self.width+self.pitch)*0.5,self.silkboxwidth*0.5)
         if self.mirror:
             silkx *= -1
-        if self.width == 0:
-            silkx *= 0.5
-            silky *= 0.5
+        self.box_corners(silkx,silky,-silkx,-silky)
         self.box_corners(-silkx,-silky,-silkx+self.pitch,-silky+self.pitch)
 
     def dih(self):
