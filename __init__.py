@@ -179,6 +179,23 @@ class Footgen():
         self.pinswide = 0
         self.sm_pads()
 
+    def soh(self):
+        """ create a dual row surface mount header """
+        if self.pins % 2:
+            raise Exception("Error, number of pins must be even")
+        self.pinshigh = self.pins/2
+        self.pinswide = 0
+        left_x = -0.5*(self.width+self.padwidth)
+        self.generator.height = self.padheight
+        self.generator.width = self.padwidth
+        # left going down
+        rowlen = self.pitch * (self.pinshigh - 1)
+        y = rowlen*-0.5
+        for padnum in range (self.pinshigh):
+            self.generator.add_pad(left_x,y,str(1+2*padnum))
+            self.generator.add_pad(-1.0*left_x,y,str(2+2*padnum))
+            y += self.pitch
+
     def twopad(self):
         """generate a two pad part, typically used for passives such
         as 0402, 0805, etc uses parameters width, padwidth, padheight
@@ -364,6 +381,10 @@ class Footgen():
         self.generator.silk_line(x2,y1,x2,y2)
         self.generator.silk_line(x2,y2,x1,y2)
         self.generator.silk_line(x1,y2,x1,y1)
+
+    def silk_line(self, x1, y1, x2, y2):
+        """ draw a silkscreen line """
+        self.generator.silk_line(x1,y1,x2,y2)
           
     def silk_crop(self, w=None, h=None, pin1="", croplength=0.25, silkwidth=0.155):
         x_stop = 0.5*self.pitch*(self.pinswide-1) + .5*self.padheight + 2*silkwidth
