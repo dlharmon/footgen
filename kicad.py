@@ -82,6 +82,7 @@ class Generator():
         self.mask_clearance = 0.075
         self.part = part
         self.silkwidth = 0.15
+        self.mirror = ""
         self.silklayer = "F.SilkS"
         self.fp = "(module {} (layer F.Cu)\n".format(part)
         self.fp += "  (at 0 0)\n"
@@ -100,6 +101,10 @@ class Generator():
         return
     # nm, degrees
     def add_pad(self, x, y, name):
+        if "x" in self.mirror:
+            x *= -1.0
+        if "y" in self.mirror:
+            y *= -1.0
         shape = "rect"
         if self.options.find("cir") != -1:
             shape = "circle"
@@ -143,10 +148,26 @@ class Generator():
         return
     # draw silkscreen line
     def silk_line(self, x1, y1, x2, y2):
+        if "x" in self.mirror:
+            x1 *= -1.0
+            x2 *= -1.0
+        if "y" in self.mirror:
+            y1 *= -1.0
+            y2 *= -1.0
         self.fp += "  (fp_line (start {} {}) (end {} {}) (layer {}) (width {}))\n".format(x1, y1, x2, y2, self.silklayer, self.silkwidth)
     def silk_arc(self, x1, y1, x2, y2, angle):
+        if "x" in self.mirror:
+            x1 *= -1.0
+            x2 *= -1.0
+        if "y" in self.mirror:
+            y1 *= -1.0
+            y2 *= -1.0
         self.fp += "  (fp_arc (start {} {}) (end {} {}) (angle {}) (layer {}) (width {}))\n".format(x1, y1, x2, y2, angle, self.silklayer, self.silkwidth)
     def silk_circle(self, x, y, radius):
+        if "x" in self.mirror:
+            x *= -1.0
+        if "y" in self.mirror:
+            y *= -1.0
         # DC ox oy fx fy w  DC Xcentre Ycentre Xpoint Ypoint Width Layer
         self.fp += "  (fp_circle (center {} {}) (end {} {}) (layer {}) (width {}))\n".format(x,y,x,y+radius,self.silklayer, self.silkwidth)
     def finish(self):
