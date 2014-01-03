@@ -79,7 +79,7 @@ class Generator():
         self.drill = 0.0 # drill diameter
         self.angle = 0.0 # rotation - only kicad
         self.clearance = 0.2
-        self.mask_clearance = 0.075
+        self.mask_clearance = False
         self.part = part
         self.silkwidth = 0.15
         self.mirror = ""
@@ -144,6 +144,8 @@ class Generator():
             layers = "    (layers *.Cu *.Mask)\n"
         self.fp += "  (pad {} {} {} {} (size {} {}){}\n".format(name, padtype, shape, atstring, self.width, self.height, drillstring)
         self.fp += layers
+        if self.mask_clearance:
+            self.fp += "(solder_mask_margin {})".format(self.mask_clearance)
         self.fp += "  )\n"
         return
     # draw silkscreen line
