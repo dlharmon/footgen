@@ -60,7 +60,13 @@ class Footgen():
         fp = self.generator.finish()
         with open(self.name, "w") as f:
             f.write(fp)
-            
+
+    def add_pad(self, name, x, y, xsize, ysize):
+        """ add a surface mount pad """
+        self.generator.width = xsize
+        self.generator.height = ysize
+        self.generator.add_pad(x,y, name)
+        
     def rowofpads(self, pos, whichway, startnum, numpads):
         """ draw a row of rectangular pads
         pos is the center position [x,y]
@@ -133,7 +139,18 @@ class Footgen():
         for x in range(columns):
             for y in range(rows):
                 self.generator.add_pad((x-(columns-1)*0.5)*pitch,(y-(rows-1)*0.5)*pitch,pin)                
-                
+
+    def add_via(self, pin="1", x=0.0, y=0.0, size=0.3302, pad=0.7):
+        """ add a single via to the footprint """
+        oldopts = self.generator.options
+        olddia = self.generator.diameter
+        self.generator.drill = size
+        self.generator.diameter = pad
+        self.generator.options = "circle"
+        self.generator.add_pad(x,y,pin)
+        self.generator.options = oldopts
+        self.generator.drill = 0
+        self.generator.diameter = olddia
 
     def sm_pads(self):
         """ create pads for a dual or quad SM package """
@@ -245,6 +262,7 @@ class Footgen():
         self.box_corners(-silkx,-silky,-silkx+self.pitch,-silky+self.pitch)
 
     def dih(self):
+        """ like DIP, but numbered across and then down instead of counterclockwise """
         self.generator.drill = self.drill
         self.generator.diameter = self.diameter
         self.generator.height = self.diameter
@@ -266,12 +284,13 @@ class Footgen():
         self.box_corners(-silkx,-silky,-silkx+self.pitch,-silky+self.pitch)
 
     def sip(self):
+        """ generates a single in line through hole footprint """
         self.width = 0
         self.pins *= 2
         self.dip()
         self.pins /= 2
 
-     # BGA row names
+    # BGA row names
     rowname = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K',
                'L', 'M', 'N', 'P', 'R', 'T', 'U', 'V', 'W', 'Y',
                'AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG', 'AH', 'AJ', 'AK',
@@ -327,6 +346,7 @@ class Footgen():
         # debug: print expandedlist
         return expandedlist
     def bga(self, rows, columns = None, omit = ""):
+        """ Generate a BGA footprint """
         if not columns:
             columns = rows
         # definitions needed to generate bga
@@ -377,6 +397,7 @@ class Footgen():
     
     # draw silkscreen box
     def box_corners(self, x1, y1, x2, y2):
+        """ draw a silkscreen rectangle with corners x1,y1 and x2,y2 """
         self.generator.silk_line(x1,y1,x2,y1)
         self.generator.silk_line(x2,y1,x2,y2)
         self.generator.silk_line(x2,y2,x1,y2)
