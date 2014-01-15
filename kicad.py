@@ -148,6 +148,18 @@ class Generator():
             self.fp += "(solder_mask_margin {})".format(self.mask_clearance)
         self.fp += "  )\n"
         return
+
+    def add_polygon(self, points, layer="F.Cu", width = 0.0):
+        polystring = "(fp_poly (pts\n"
+        for p in points:
+            if "x" in self.mirror:
+                p[0] *= -1.0
+            if "y" in self.mirror:
+                p[1] *= -1.0
+            polystring += "\t(xy {} {})\n".format(p[0], p[1])
+        polystring += ") (layer {}) (width {}) )".format(layer, width)
+        self.fp += polystring
+
     # draw silkscreen line
     def silk_line(self, x1, y1, x2, y2):
         if "x" in self.mirror:
