@@ -37,7 +37,7 @@ class Generator():
         self.fp = "Element[\"\" \"%s\" \"Name\" \"Val\" 1000 1000 %dnm %dnm 0 100 \"\"]\n(\n" % (part, self.mm_to_geda(refdesx), self.mm_to_geda(-1.0 - refdesy))
         return
     def mm_to_geda(self,mm):
-        return int(0.5 + mm * 1.0e6)
+        return int(round(mm * 1.0e6))
     def add_pad(self, x, y, name):
         if (self.options.find("round") != -1) | (self.options.find("cir") != -1):
             flags = ""
