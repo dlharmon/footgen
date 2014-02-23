@@ -100,7 +100,7 @@ class Generator():
         self.fp += "  )\n"
         return
     # nm, degrees
-    def add_pad(self, x, y, name):
+    def add_pad(self, x, y, name, layer = None):
         if "x" in self.mirror:
             x *= -1.0
         if "y" in self.mirror:
@@ -116,7 +116,10 @@ class Generator():
             atstring = "(at {:.6f} {:.6f} {:.6f})".format(x, y, self.angle)
         else:
             atstring = "(at {:.6f} {:.6f})".format(x, y)
-        if self.options.find("masked") != -1:
+        if layer != None:
+            padtype = "smd"
+            layers = "    (layers {})\n".format(layer)
+        elif self.options.find("masked") != -1:
             padtype = "smd"
             if self.options.find("bot") != -1:
                 layers = "    (layers B.Cu)\n"
@@ -157,7 +160,7 @@ class Generator():
             if "y" in self.mirror:
                 p[1] *= -1.0
             polystring += "\t(xy {:.6f} {:.6f})\n".format(p[0], p[1])
-        polystring += ") (layer {}) (width {:.6f}) )".format(layer, width)
+        polystring += ") (layer {}) (width {:.6f}) )\n".format(layer, width)
         self.fp += polystring
 
     # draw silkscreen line
