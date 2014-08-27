@@ -22,7 +22,7 @@
 
 class Generator():
     def __init__(self, part): # part name
-        self.options = "" # "cir" circle pad (BGA) "round" rounded corners "bottom" on bottom of board
+        self.options = [] # "cir" circle pad (BGA) "round" rounded corners "bottom" on bottom of board
         self.diameter = 1 # used for circular pads, mm
         self.width = 1 # pad x dimension or silk width
         self.height = 1 # pad y dimension
@@ -39,10 +39,24 @@ class Generator():
     def mm_to_geda(self,mm):
         return int(round(mm * 1.0e6))
     def add_pad(self, x, y, name):
-        if (self.options.find("round") != -1) | (self.options.find("cir") != -1):
-            flags = ""
+        try:
+            options.remove('nopaste')
+        except ValueError:
+            print "nopaste option for pad {} ignored, not valid in gEDA/pcb".format(name)
+
+        if ("round" in self.options) or ("cir" in self.options):
+            try:
+                options.remove('round')
+            except ValueError:
+                pass
+            try:
+                options.remove('cir')
+            except ValueError:
+                pass
+            
+            flags = ','.join(options)
         else:
-            flags = "square"
+            flags = "square," + ','.join(options)
         if self.drill > 0:
             self.fp += "\tPin[ %dnm %dnm %dnm %dnm %dnm %dnm \"%s\" \"%s\" \"%s\"]\n" % (self.mm_to_geda(x),self.mm_to_geda(y),self.mm_to_geda(self.diameter),\
                                                                                          self.mm_to_geda(self.clearance*2),\

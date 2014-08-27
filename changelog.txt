@@ -47,3 +47,13 @@ metric ugly instead of imperial ugly
 Add attribute "lefthand" to support both genders of BGA connectors
 Embed the filename in the file, helps when inspecting the resulting PCB layout file
 Deleted trailing spaces
+
+8/27/2014 Patrick Sheridan
+Changed <options> to be a python list rather than a string in generators,
+__init__, and examples.  Initially, I noticed that geda.py was ignoring my
+"hole" option because flags were simply set based on the presence or absence
+of "cir" or "round", thus tossing any other options.  To search through and
+remove "cir" or "round" from the options string seemed unpythonic, so I
+switched everything over to using a list instead.  Unfortunately, this will
+break backwards compatibiilty with scripts that assume options is a string--if
+desired, I can write some type checking to maintain backwards compatibility.

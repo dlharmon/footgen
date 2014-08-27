@@ -72,7 +72,7 @@
 
 class Generator():
     def __init__(self, part): # part name
-        self.options = "" # "cir" circle pad (BGA) "round" rounded corners "bottom" on bottom of board
+        self.options = [] # "cir" circle pad (BGA) "round" rounded corners "bottom" on bottom of board
         self.diameter = 1.0 # used for circular pads, mm
         self.width = 1.0 # pad x dimension or silk width
         self.height = 1.0 # pad y dimension
@@ -106,11 +106,11 @@ class Generator():
         if "y" in self.mirror:
             y *= -1.0
         shape = "rect"
-        if self.options.find("cir") != -1:
+        if "cir" in self.options:
             shape = "circle"
             self.width = self.diameter
             self.height = self.diameter
-        elif self.options.find("round") != -1:
+        elif "round" in self.options:
             shape = "oval"
         if(self.angle != 0):
             atstring = "(at {:.6f} {:.6f} {:.6f})".format(x, y, self.angle)
@@ -119,28 +119,28 @@ class Generator():
         if layer != None:
             padtype = "smd"
             layers = "    (layers {})\n".format(layer)
-        elif self.options.find("masked") != -1:
+        elif "masked" in self.options:
             padtype = "smd"
-            if self.options.find("bot") != -1:
+            if "bot" in self.options:
                 layers = "    (layers B.Cu)\n"
             else:
                 layers = "    (layers F.Cu)\n"
-        elif self.options.find("nopaste") != -1:
+        elif "nopaste" in self.options:
             padtype = "smd"
-            if self.options.find("bot") != -1:
+            if "bot" in self.options:
                 layers = "    (layers B.Cu B.Mask)\n"
             else:
                 layers = "    (layers F.Cu F.Mask)\n"
         else:
             padtype = "smd"
-            if self.options.find("bot") != -1:
+            if "bot" in self.options:
                 layers = "    (layers B.Cu B.Mask B.Paste)\n"
             else:
                 layers = "    (layers F.Cu F.Mask F.Paste)\n"
         drillstring = ""
         if self.drill > 0:
             drillstring = " (drill {:.6f})".format(self.drill)
-            if(self.options.find("noplate") == -1):
+            if"noplate" in self.options:
                 padtype = "thru_hole"
             else:
                 padtype = "np_thru_hole"
