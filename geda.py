@@ -40,23 +40,23 @@ class Generator():
         return int(round(mm * 1.0e6))
     def add_pad(self, x, y, name):
         try:
-            options.remove('nopaste')
+            self.options.remove('nopaste')
         except ValueError:
             print "nopaste option for pad {} ignored, not valid in gEDA/pcb".format(name)
 
         if ("round" in self.options) or ("cir" in self.options):
             try:
-                options.remove('round')
+                self.options.remove('round')
             except ValueError:
                 pass
             try:
-                options.remove('cir')
+                self.options.remove('cir')
             except ValueError:
                 pass
             
-            flags = ','.join(options)
+            flags = ','.join(self.options)
         else:
-            flags = "square," + ','.join(options)
+            flags = "square," + ','.join(self.options)
         if self.drill > 0:
             self.fp += "\tPin[ %dnm %dnm %dnm %dnm %dnm %dnm \"%s\" \"%s\" \"%s\"]\n" % (self.mm_to_geda(x),self.mm_to_geda(y),self.mm_to_geda(self.diameter),\
                                                                                          self.mm_to_geda(self.clearance*2),\
