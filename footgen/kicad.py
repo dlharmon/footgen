@@ -74,7 +74,7 @@ from footgen.utils import OptionsTranslator
 
 class Generator(OptionsTranslator):
     def __init__(self, part): # part name
-        self.options_list = [] # "cir" circle pad (BGA) "round" rounded corners "bottom" on bottom of board
+        self.options_list = [] # "circle" circle pad (BGA) "round" rounded corners "bottom" on bottom of board
         self.diameter = 1.0 # used for circular pads, mm
         self.width = 1.0 # pad x dimension or silk width
         self.height = 1.0 # pad y dimension
@@ -108,7 +108,7 @@ class Generator(OptionsTranslator):
         if "y" in self.mirror:
             y *= -1.0
         shape = "rect"
-        if "cir" in self.options_list:
+        if "circle" in self.options_list:
             shape = "circle"
             self.width = self.diameter
             self.height = self.diameter
@@ -123,19 +123,19 @@ class Generator(OptionsTranslator):
             layers = "    (layers {})\n".format(layer)
         elif "masked" in self.options_list:
             padtype = "smd"
-            if "bot" in self.options_list:
+            if "bottom" in self.options_list:
                 layers = "    (layers B.Cu)\n"
             else:
                 layers = "    (layers F.Cu)\n"
         elif "nopaste" in self.options_list:
             padtype = "smd"
-            if "bot" in self.options_list:
+            if "bottom" in self.options_list:
                 layers = "    (layers B.Cu B.Mask)\n"
             else:
                 layers = "    (layers F.Cu F.Mask)\n"
         else:
             padtype = "smd"
-            if "bot" in self.options_list:
+            if "bottom" in self.options_list:
                 layers = "    (layers B.Cu B.Mask B.Paste)\n"
             else:
                 layers = "    (layers F.Cu F.Mask F.Paste)\n"
