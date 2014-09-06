@@ -114,9 +114,9 @@ class Footgen():
             pin = str(self.pins+1)
         self.generator.width = w
         self.generator.height = h
-        self.generator.options = "nopaste"
+        self.generator.options = ["nopaste"]
         self.generator.add_pad(0,0,pin)
-        self.generator.options = ""
+        self.generator.options = []
         dotsizex = w/dots[0]
         dotsizey = h/dots[1]
         scale = math.sqrt(coverage)
@@ -136,7 +136,7 @@ class Footgen():
         self.generator.drill = size
         self.generator.diameter = pad
         print size, pad
-        self.generator.options = "circle"
+        self.generator.options = ["circle"]
         for x in range(columns):
             for y in range(rows):
                 self.generator.add_pad((x-(columns-1)*0.5)*pitch,(y-(rows-1)*0.5)*pitch,pin)
@@ -147,7 +147,7 @@ class Footgen():
         olddia = self.generator.diameter
         self.generator.drill = size
         self.generator.diameter = pad
-        self.generator.options = "circle"
+        self.generator.options = ["circle"]
         self.generator.add_pad(x,y,pin)
         self.generator.options = oldopts
         self.generator.drill = 0
@@ -241,14 +241,14 @@ class Footgen():
         self.generator.diameter = self.diameter
         self.generator.height = self.diameter
         self.generator.width = self.diameter
-        self.generator.options = "square"
+        self.generator.options = ["square"]
         y = -(self.pins*0.5-1.0)*self.pitch*0.5
         x = self.width*0.5
         if self.mirror:
             x *= -1
         for pinnum in range (1,1+self.pins/2):
             self.generator.add_pad(-x,y,str(pinnum))
-            self.generator.options = "circle" # after pin 1 gets placed
+            self.generator.options = ["circle"] # after pin 1 gets placed
             y += self.pitch
         y -= self.pitch
         if self.width != 0:
@@ -272,7 +272,7 @@ class Footgen():
         x = self.width*0.5
         for pinnum in range (1,1+self.pins,2):
             self.generator.add_pad(-x,y,str(pinnum))
-            self.generator.options = "circle"
+            self.generator.options = ["circle"]
             y += self.pitch
         if self.width != 0:
             y = -(self.pins/2-1)*self.pitch*0.5
@@ -361,7 +361,7 @@ class Footgen():
         if self.mirror:
             yoff = -yoff
             ypitch = -ypitch
-        self.generator.options += "circle"
+        self.generator.options.append("circle")
         self.generator.diameter = self.diameter
         for row in range(1, rows+1):
             for col in range(1, 1+columns):
