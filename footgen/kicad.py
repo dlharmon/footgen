@@ -70,7 +70,9 @@
 # Embed the filename in the file, helps when inspecting the resulting PCB layout file
 # Deleted trailing spaces
 
-class Generator():
+from footgen.utils import OptionsTranslator
+
+class Generator(OptionsTranslator):
     def __init__(self, part): # part name
         self.options_list = [] # "cir" circle pad (BGA) "round" rounded corners "bottom" on bottom of board
         self.diameter = 1.0 # used for circular pads, mm

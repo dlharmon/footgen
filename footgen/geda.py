@@ -20,9 +20,11 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
+from footgen.utils import OptionsTranslator
+
 nopaste_suppress = False
 
-class Generator():
+class Generator(OptionsTranslator):
     def __init__(self, part): # part name
         self.options_list = [] # "cir" circle pad (BGA) "round" rounded corners "bottom" on bottom of board
         self.diameter = 1 # used for circular pads, mm
@@ -62,9 +64,9 @@ class Generator():
                 self.options_list.remove('circle')
             except ValueError:
                 pass
-           
+
         flags = ','.join(self.options_list)
-        
+
         if self.drill > 0:
             self.fp += "\tPin[ %dnm %dnm %dnm %dnm %dnm %dnm \"%s\" \"%s\" \"%s\"]\n" % (self.mm_to_geda(x),self.mm_to_geda(y),self.mm_to_geda(self.diameter),\
                                                                                          self.mm_to_geda(self.clearance*2),\
