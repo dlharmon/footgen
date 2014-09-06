@@ -24,7 +24,7 @@ nopaste_suppress = False
 
 class Generator():
     def __init__(self, part): # part name
-        self.options = [] # "cir" circle pad (BGA) "round" rounded corners "bottom" on bottom of board
+        self.options_list = [] # "cir" circle pad (BGA) "round" rounded corners "bottom" on bottom of board
         self.diameter = 1 # used for circular pads, mm
         self.width = 1 # pad x dimension or silk width
         self.height = 1 # pad y dimension
@@ -42,28 +42,28 @@ class Generator():
         return int(round(mm * 1.0e6))
     def add_pad(self, x, y, name):
         try:
-            self.options.remove('nopaste')
+            self.options_list.remove('nopaste')
         except ValueError:
             global nopaste_suppress
             if not nopaste_suppress:
                 print "nopaste option for pad {} ignored, not valid in gEDA/pcb \nFuture nopaste warnings suppressed".format(name)
                 nopaste_suppress = True
 
-        if ("round" in self.options) or ("cir" in self.options) or ("circle" in self.options):
+        if ("round" in self.options_list) or ("cir" in self.options) or ("circle" in self.options):
             try:
-                self.options.remove('round')
+                self.options_list.remove('round')
             except ValueError:
                 pass
             try:
-                self.options.remove('cir')
+                self.options_list.remove('cir')
             except ValueError:
                 pass
             try:
-                self.options.remove('circle')
+                self.options_list.remove('circle')
             except ValueError:
                 pass
            
-        flags = ','.join(self.options)
+        flags = ','.join(self.options_list)
         
         if self.drill > 0:
             self.fp += "\tPin[ %dnm %dnm %dnm %dnm %dnm %dnm \"%s\" \"%s\" \"%s\"]\n" % (self.mm_to_geda(x),self.mm_to_geda(y),self.mm_to_geda(self.diameter),\
