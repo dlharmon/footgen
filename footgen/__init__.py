@@ -21,7 +21,8 @@
 #
 # Patches and bug reports to darrell@dlharmon.com
 
-import geda, kicad
+import footgen.geda as geda
+import footgen.kicad as kicad
 import re
 import math
 
@@ -66,7 +67,7 @@ class Footgen():
         self.generator.width = xsize
         self.generator.height = ysize
         self.generator.add_pad(x,y, name)
-        
+
     def rowofpads(self, pos, whichway, startnum, numpads):
         """ draw a row of rectangular pads
         pos is the center position [x,y]
@@ -138,7 +139,7 @@ class Footgen():
         self.generator.options = "circle"
         for x in range(columns):
             for y in range(rows):
-                self.generator.add_pad((x-(columns-1)*0.5)*pitch,(y-(rows-1)*0.5)*pitch,pin)                
+                self.generator.add_pad((x-(columns-1)*0.5)*pitch,(y-(rows-1)*0.5)*pitch,pin)
 
     def add_via(self, pin="1", x=0.0, y=0.0, size=0.3302, pad=0.7):
         """ add a single via to the footprint """
@@ -181,13 +182,13 @@ class Footgen():
             self.rowofpads([0,(self.height+self.padwidth)*0.5], dir_bottom, self.pinshigh+1, self.pinswide)
             # draw top
             self.rowofpads([0,-(self.height+self.padwidth)*0.5], dir_top, 2*self.pinshigh+self.pinswide+1, self.pinswide)
-        
+
     def qfn(self):
         self.pinshigh = self.pins/4
         self.pinswide = self.pinshigh
         self.height = self.width
         self.sm_pads()
- 
+
     def so(self):
         """ create a dual row surface mount footprint uses pins, padwidth, padheight, pitch """
         if self.pins % 2:
@@ -222,7 +223,7 @@ class Footgen():
         self.height = 1
         self.pitch = 1
         self.sm_pads()
-    
+
     def tabbed(self):
         """ generate a part with a tab such as SOT-223 """
         totalheight = self.height+self.tabheight+self.padheight
@@ -233,7 +234,7 @@ class Footgen():
         self.generator.height = self.tabheight
         self.generator.width = self.tabwidth
         self.generator.add_pad(0,taby,str(self.pins+1))
-    
+
     def dip(self):
         """ DIP and headers, set width to 0 and pincount to 2x the desired for SIP"""
         self.generator.drill = self.drill
@@ -368,7 +369,7 @@ class Footgen():
                     x = xoff + (self.pitch*col)
                     y = yoff + (ypitch*row)
                     self.generator.add_pad(x, y, self.ballname(col,row))
-                    
+
     def silkbox(self, w=None, h=None, notch=None, silkwidth=0.155, arc=None, circle=None, nosides=False):
         self.generator.silkwidth = silkwidth
         if not h:
@@ -393,8 +394,8 @@ class Footgen():
         # top
         self.generator.silk_line(-0.5*w+pullback, -0.5*h, 0.5*w, -0.5*h)
 
-        
-    
+
+
     # draw silkscreen box
     def box_corners(self, x1, y1, x2, y2):
         """ draw a silkscreen rectangle with corners x1,y1 and x2,y2 """
@@ -406,7 +407,7 @@ class Footgen():
     def silk_line(self, x1, y1, x2, y2):
         """ draw a silkscreen line """
         self.generator.silk_line(x1,y1,x2,y2)
-          
+
     def silk_crop(self, w=None, h=None, pin1="", croplength=0.25, silkwidth=0.155):
         x_stop = 0.5*self.pitch*(self.pinswide-1) + .5*self.padheight + 2*silkwidth
         y_stop = 0.5*self.pitch*(self.pinshigh-1) + .5*self.padheight + 2*silkwidth
@@ -428,6 +429,6 @@ class Footgen():
         self.generator.silk_line( x,  y, x_stop, y)
         self.generator.silk_line( x,  y, x, y_stop)
 
-# some unit conversions to mm    
+# some unit conversions to mm
 mil = 0.0254
 inch = 25.4
