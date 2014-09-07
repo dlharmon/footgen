@@ -22,6 +22,8 @@
 
 from footgen.utils import OptionsTranslator
 
+import warnings
+
 nopaste_suppress = False
 
 class Generator(OptionsTranslator):
@@ -48,7 +50,8 @@ class Generator(OptionsTranslator):
         except ValueError:
             global nopaste_suppress
             if not nopaste_suppress:
-                print "nopaste option for pad {} ignored, not valid in gEDA/pcb \nFuture nopaste warnings suppressed".format(name)
+                warnings.warn("nopaste option for pad {} ignored, not valid in gEDA/pcb\n"
+                              "Future nopaste warnings suppressed".format(name))
                 nopaste_suppress = True
 
         if ("round" in self.options_list) or ("cir" in self.options) or ("circle" in self.options):
