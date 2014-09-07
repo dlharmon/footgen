@@ -25,6 +25,7 @@ from footgen.generator import BaseGenerator
 import warnings
 
 nopaste_suppress = False
+round_suppress = False
 
 class Generator(BaseGenerator):
     def __init__(self, part): # part name
