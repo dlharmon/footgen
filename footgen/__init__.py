@@ -23,11 +23,11 @@
 
 import footgen.geda as geda
 import footgen.kicad as kicad
-from footgen.utils import OptionsTranslator
+
 import re
 import math
 
-class Footgen(OptionsTranslator):
+class Footgen(object):
     def __init__(self, name=None, output_format="kicad"):
         self.generator = None
         self.output_format = output_format

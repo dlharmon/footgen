@@ -70,9 +70,11 @@
 # Embed the filename in the file, helps when inspecting the resulting PCB layout file
 # Deleted trailing spaces
 
-from footgen.utils import OptionsTranslator
+from footgen.generator import BaseGenerator
 
-class Generator(OptionsTranslator):
+import warnings
+
+class Generator(BaseGenerator):
     def __init__(self, part): # part name
         self.options_list = [] # "circle" circle pad (BGA) "round" rounded corners "bottom" on bottom of board
         self.diameter = 1.0 # used for circular pads, mm
@@ -103,6 +105,12 @@ class Generator(OptionsTranslator):
         return
     # nm, degrees
     def add_pad(self, x, y, name, layer = None):
+        self._sanitize_options(name)
+
+        unhandled = self._unhandled_options()
+        if unhandled:
+            warnings.warn('kicad backend ingnoring unkown options "{}" for pad {}\n'.format(', '.join(unhandled), name))
+
         if "x" in self.mirror:
             x *= -1.0
         if "y" in self.mirror:

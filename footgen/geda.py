@@ -20,13 +20,13 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-from footgen.utils import OptionsTranslator
+from footgen.generator import BaseGenerator
 
 import warnings
 
 nopaste_suppress = False
 
-class Generator(OptionsTranslator):
+class Generator(BaseGenerator):
     def __init__(self, part): # part name
         self.options_list = [] # "cir" circle pad (BGA) "round" rounded corners "bottom" on bottom of board
         self.diameter = 1 # used for circular pads, mm
@@ -44,31 +44,25 @@ class Generator(OptionsTranslator):
         return
     def mm_to_geda(self,mm):
         return int(round(mm * 1.0e6))
+
     def add_pad(self, x, y, name):
-        try:
-            self.options_list.remove('nopaste')
-        except ValueError:
+        self._sanitize_options(name)
+
+        if "nopaste" in self.options_list:
             global nopaste_suppress
             if not nopaste_suppress:
                 warnings.warn("nopaste option for pad {} ignored, not valid in gEDA/pcb\n"
                               "Future nopaste warnings suppressed".format(name))
                 nopaste_suppress = True
 
-        if ("round" in self.options_list) or ("cir" in self.options) or ("circle" in self.options):
-            try:
-                self.options_list.remove('round')
-            except ValueError:
-                pass
-            try:
-                self.options_list.remove('cir')
-            except ValueError:
-                pass
-            try:
-                self.options_list.remove('circle')
-            except ValueError:
-                pass
+        if "round" in self.options_list:
+            global round_suppress
+            if not round_suppress:
+                warnings.warn("round option for pad {} ignored, not valid in gEDA/pcb\n"
+                              "Future round warnings suppressed".format(name))
+                round_suppress = True
 
-        flags = ','.join(self.options_list)
+        flags = ', '.join(self._unhandled_options())
 
         if self.drill > 0:
             self.fp += "\tPin[ %dnm %dnm %dnm %dnm %dnm %dnm \"%s\" \"%s\" \"%s\"]\n" % (self.mm_to_geda(x),self.mm_to_geda(y),self.mm_to_geda(self.diameter),\
