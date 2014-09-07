@@ -34,17 +34,17 @@ class Generator():
         self.part = part
         refdesy = 0
         refdesx = 0
-        self.fp = "Element[\"\" \"%s\" \"Name\" \"Val\" 1000 1000 %dnm %dnm 0 100 \"\"]\n(\n" % (part, self.mm_to_geda(refdesx), self.mm_to_geda(-1.0 - refdesy))
+        self.fp = 'Element["" "{part}" "Name" "Val" 1000 1000 {:d}nm {:d}nm 0 100 ""]\n(\n'.format(part=part, *self.mm_to_geda(refdesx, -1.0 - refdesy))
         return
 
-    def mm_to_geda(self, mm):
-        return int(round(mm * 1.0e6))
+    def mm_to_geda(self, *mm):
+        return (int(round(value * 1.0e6)) for value in mm)
 
     def _add_pin(self, x, y, name, flags):
-        self.fp += "\tPin[ %dnm %dnm %dnm %dnm %dnm %dnm \"%s\" \"%s\" \"%s\"]\n" % (self.mm_to_geda(x),self.mm_to_geda(y),self.mm_to_geda(self.diameter),\
-                                                                                     self.mm_to_geda(self.clearance*2),\
-                                                                                     self.mm_to_geda(self.mask_clearance+self.diameter),\
-                                                                                     self.mm_to_geda(self.drill),name,name,flags)
+        self.fp += '\tPin[ {0:d}nm {1:d}nm {2:d}nm {3:d}nm {4:d}nm {5:d}nm "{name:s}" "{name:s}" "{flags:s}"]\n'.format(
+            *self.mm_to_geda(x, y, self.diameter, self.clearance*2, self.mask_clearance+self.diameter, self.drill),
+            name=name,flags=flags
+        )
 
     def _add_pad(self, x, y, name, flags):
         linewidth = min(self.height,self.width)
@@ -61,9 +61,10 @@ class Generator():
             x2 = x + linelength/2
             y1 = y
             y2 = y
-        self.fp += "\tPad[%dnm %dnm %dnm %dnm %dnm %dnm %dnm \"%s\" \"%s\" \"%s\"]\n"\
-            % (self.mm_to_geda(x1), self.mm_to_geda(y1), self.mm_to_geda(x2), self.mm_to_geda(y2),\
-                   self.mm_to_geda(self.width), self.mm_to_geda(self.clearance*2), self.mm_to_geda(self.mask_clearance+self.width), name, name, flags)
+        self.fp += '\tPad[{0:d}nm {1:d}nm {2:d}nm {3:d}nm {4:d}nm {5:d}nm {6:d}nm "{name:s}" "{name:s}" "{flags:s}"]\n'.format(
+            *self.mm_to_geda(x1, y1, x2, y2, self.width, self.clearance*2, self.mask_clearance+self.width),
+            name=name, flags=flags
+        )
 
     def add_pad(self, x, y, name):
         if (self.options.find("round") != -1) | (self.options.find("cir") != -1):
@@ -76,8 +77,10 @@ class Generator():
             self._add_pad(x, y, name, flags)
 
     def silk_line(self, x1, y1, x2, y2):
-        self.fp += "\tElementLine [%dnm %dnm %dnm %dnm %dnm]\n" % (self.mm_to_geda(x1), self.mm_to_geda(y1),\
-                                                                       self.mm_to_geda(x2), self.mm_to_geda(y2), self.mm_to_geda(self.silkwidth))
+        self.fp += '\tElementLine [{0:d}nm {1:d}nm {2:d}nm {3:d}nm {4:d}nm]\n'.format(
+            *self.mm_to_geda(x1, y1, x2, y2, self.silkwidth)
+        )
+
     def finish(self):
         self.fp += ")\n"
         return self.fp
