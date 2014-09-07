@@ -36,29 +36,27 @@ class Generator():
         refdesx = 0
         self.fp = "Element[\"\" \"%s\" \"Name\" \"Val\" 1000 1000 %dnm %dnm 0 100 \"\"]\n(\n" % (part, self.mm_to_geda(refdesx), self.mm_to_geda(-1.0 - refdesy))
         return
-    def mm_to_geda(self,mm):
+
+    def mm_to_geda(self, mm):
         return int(round(mm * 1.0e6))
-    def add_pad(self, x, y, name):
-        if (self.options.find("round") != -1) | (self.options.find("cir") != -1):
-            flags = ""
-        else:
-            flags = "square"
-        if self.drill > 0:
-            self.fp += "\tPin[ %dnm %dnm %dnm %dnm %dnm %dnm \"%s\" \"%s\" \"%s\"]\n" % (self.mm_to_geda(x),self.mm_to_geda(y),self.mm_to_geda(self.diameter),\
-                                                                                         self.mm_to_geda(self.clearance*2),\
-                                                                                         self.mm_to_geda(self.mask_clearance+self.diameter),\
-                                                                                         self.mm_to_geda(self.drill),name,name,flags)
-            return
+
+    def _add_pin(self, x, y, name, flags):
+        self.fp += "\tPin[ %dnm %dnm %dnm %dnm %dnm %dnm \"%s\" \"%s\" \"%s\"]\n" % (self.mm_to_geda(x),self.mm_to_geda(y),self.mm_to_geda(self.diameter),\
+                                                                                     self.mm_to_geda(self.clearance*2),\
+                                                                                     self.mm_to_geda(self.mask_clearance+self.diameter),\
+                                                                                     self.mm_to_geda(self.drill),name,name,flags)
+
+    def _add_pad(self, x, y, name, flags):
         linewidth = min(self.height,self.width)
         linelength = abs(self.height-self.width)
         if self.height>self.width:
-        #vertcal pad
+            # vertcal pad
             x1 = x
             x2 = x
             y1 = y - linelength/2
             y2 = y + linelength/2
         else:
-        #horizontal pad
+            # horizontal pad
             x1 = x - linelength/2
             x2 = x + linelength/2
             y1 = y
@@ -66,7 +64,17 @@ class Generator():
         self.fp += "\tPad[%dnm %dnm %dnm %dnm %dnm %dnm %dnm \"%s\" \"%s\" \"%s\"]\n"\
             % (self.mm_to_geda(x1), self.mm_to_geda(y1), self.mm_to_geda(x2), self.mm_to_geda(y2),\
                    self.mm_to_geda(self.width), self.mm_to_geda(self.clearance*2), self.mm_to_geda(self.mask_clearance+self.width), name, name, flags)
-    # draw silkscreen line
+
+    def add_pad(self, x, y, name):
+        if (self.options.find("round") != -1) | (self.options.find("cir") != -1):
+            flags = ""
+        else:
+            flags = "square"
+        if self.drill > 0:
+            self._add_pin(x, y, name, flags)
+        else:
+            self._add_pad(x, y, name, flags)
+
     def silk_line(self, x1, y1, x2, y2):
         self.fp += "\tElementLine [%dnm %dnm %dnm %dnm %dnm]\n" % (self.mm_to_geda(x1), self.mm_to_geda(y1),\
                                                                        self.mm_to_geda(x2), self.mm_to_geda(y2), self.mm_to_geda(self.silkwidth))
