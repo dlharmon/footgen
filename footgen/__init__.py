@@ -359,18 +359,19 @@ class Footgen():
 
     def silkbox(self, w=None, h=None, notch=None, silkwidth=0.155, arc=None, circle=None, nosides=False):
         self.generator.silkwidth = silkwidth
-        if not h:
+
+        if h is None:
             h = w
-        if notch:
+        if notch is not None:
             pullback = notch
         else:
             pullback = 0.0
-        if notch:
+        if notch is not None:
             self.generator.silk_line(-0.5*w+pullback, -0.5*h, -0.5*w, -0.5*h+pullback)
-        if arc:
+        if arc is not None:
             self.generator.silk_arc(0, -0.5*h, arc,-0.5*h, 180.0)
-        if circle:
-            self.generator.silk_circle(-0.5*w, -0.5*h-circle, circle)
+        if circle is not None:
+            self.generator.silk_circle(-0.5*w+2*circle, -0.5*h+2*circle, circle)
         if not nosides:
             # left
             self.generator.silk_line(-0.5*w, -0.5*h+pullback, -0.5*w, 0.5*h)
