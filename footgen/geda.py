@@ -92,7 +92,7 @@ class Generator():
 
     def _silk_arc(self, cx, cy, half_width, half_height, start, delta):
         self.fp += '\tElementArc [{0:d}nm {1:d}nm {2:d}nm {3:d}nm {start:d} {delta:d} {4:d}nm]\n'.format(
-            *self.mm_to_geda(cx, cy, width, height, self.silkwidth),
+            *self.mm_to_geda(cx, cy, half_width, half_height, self.silkwidth),
             start=int(round(start)), delta=int(round(delta))
         )
 
