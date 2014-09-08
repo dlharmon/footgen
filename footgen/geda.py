@@ -22,7 +22,8 @@
 
 class Generator():
     def __init__(self, part): # part name
-        self.options = "" # "cir" circle pad (BGA) "round" rounded corners "bottom" on bottom of board
+        self.options = "" # "cir" circle pad (BGA) "round" rounded
+                          # corners "bottom" on bottom of board
         self.diameter = 1 # used for circular pads, mm
         self.width = 1 # pad x dimension or silk width
         self.height = 1 # pad y dimension
@@ -34,7 +35,9 @@ class Generator():
         self.part = part
         refdesy = 0
         refdesx = 0
-        self.fp = 'Element["" "{part}" "Name" "Val" 1000 1000 {:d}nm {:d}nm 0 100 ""]\n(\n'.format(part=part, *self.mm_to_geda(refdesx, -1.0 - refdesy))
+        self.fp = 'Element["" "{part}" "Name" "Val" 1000 1000 {:d}nm {:d}nm 0 100 ""]\n(\n'.format(
+            part=part, *self.mm_to_geda(refdesx, -1.0-refdesy)
+        )
         return
 
     def mm_to_geda(self, *mm):
@@ -42,14 +45,16 @@ class Generator():
 
     def _add_pin(self, x, y, name, flags):
         self.fp += '\tPin[ {0:d}nm {1:d}nm {2:d}nm {3:d}nm {4:d}nm {5:d}nm "{name:s}" "{name:s}" "{flags:s}"]\n'.format(
-            *self.mm_to_geda(x, y, self.diameter, self.clearance*2, self.mask_clearance+self.diameter, self.drill),
+            *self.mm_to_geda(x, y, self.diameter, self.clearance*2,
+                             self.mask_clearance+self.diameter, self.drill),
             name=name,flags=flags
         )
 
     def _add_pad(self, x, y, name, flags):
         linewidth = min(self.height,self.width)
         linelength = abs(self.height-self.width)
-        if self.height>self.width:
+
+        if self.height > self.width:
             # vertcal pad
             x1 = x
             x2 = x
@@ -62,12 +67,14 @@ class Generator():
             y1 = y
             y2 = y
         self.fp += '\tPad[{0:d}nm {1:d}nm {2:d}nm {3:d}nm {4:d}nm {5:d}nm {6:d}nm "{name:s}" "{name:s}" "{flags:s}"]\n'.format(
-            *self.mm_to_geda(x1, y1, x2, y2, self.width, self.clearance*2, self.mask_clearance+self.width),
+            *self.mm_to_geda(x1, y1, x2, y2, self.width, self.clearance*2,
+                             self.mask_clearance+self.width),
             name=name, flags=flags
         )
 
     def add_pad(self, x, y, name):
-        if (self.options.find("round") != -1) | (self.options.find("cir") != -1):
+        if (self.options.find("round") != -1 or
+            self.options.find("cir") != -1):
             flags = ""
         else:
             flags = "square"
