@@ -23,6 +23,7 @@
 from footgen.generator import BaseGenerator
 
 import warnings
+import math
 
 nopaste_suppress = False
 round_suppress = False
@@ -30,13 +31,6 @@ round_suppress = False
 class Generator(BaseGenerator):
     def __init__(self, part): # part name
         self.options_list = [] # "cir" circle pad (BGA) "round" rounded corners "bottom" on bottom of board
-
-import math
-
-class Generator():
-    def __init__(self, part): # part name
-        self.options = "" # "cir" circle pad (BGA) "round" rounded
-                          # corners "bottom" on bottom of board
         self.diameter = 1 # used for circular pads, mm
         self.width = 1 # pad x dimension or silk width
         self.height = 1 # pad y dimension
@@ -64,6 +58,15 @@ class Generator():
                 warnings.warn("nopaste option for pad {} ignored, not valid in gEDA/pcb\n"
                               "Future nopaste warnings suppressed".format(name))
                 nopaste_suppress = True
+
+        if "round" in self.options_list:
+            global round_suppress
+            if not round_suppress:
+                warnings.warn("round option for pad {} ignored, not valid in gEDA/pcb\n"
+                              "Future round warnings suppressed".format(name))
+                round_suppress = True
+
+            flags = ', '.join(self._unhandled_options())
 
     def mm_to_geda(self, *mm):
         return (int(round(value * 1.0e6)) for value in mm)
