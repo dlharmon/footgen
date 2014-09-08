@@ -37,7 +37,7 @@ class Generator():
         self.part = part
         refdesy = 0
         refdesx = 0
-        self.fp = 'Element["" "{part}" "Name" "Val" 1000 1000 {:d}nm {:d}nm 0 100 ""]\n(\n'.format(
+        self.fp = 'Element["" "{part}" "" "" 1000 1000 {:d}nm {:d}nm 0 100 ""]\n(\n'.format(
             part=part, *self.mm_to_geda(refdesx, -1.0-refdesy)
         )
         return
