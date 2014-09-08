@@ -79,6 +79,6 @@ class BaseGenerator(object):
             # the backends (instead of being passed on to the
             # underlying tool)
             if option not in ("circle", "square", "bottom", "round",
-                              "noplate", "masked"):
+                              "noplate", "masked", "nopaste"):
                 res.append(option)
         return res
