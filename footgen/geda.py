@@ -69,8 +69,8 @@ class Generator():
             y1 = y
             y2 = y
         self.fp += '\tPad[{0:d}nm {1:d}nm {2:d}nm {3:d}nm {4:d}nm {5:d}nm {6:d}nm "{name:s}" "{name:s}" "{flags:s}"]\n'.format(
-            *self.mm_to_geda(x1, y1, x2, y2, self.width, self.clearance*2,
-                             self.mask_clearance+self.width),
+            *self.mm_to_geda(x1, y1, x2, y2, linewidth, self.clearance*2,
+                             self.mask_clearance+linewidth),
             name=name, flags=flags
         )
 
