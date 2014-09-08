@@ -163,25 +163,12 @@ class Footgen(object):
             left_x *= -1
             dir_bottom = "left"
             dir_top = "right"
-        #print self.name, self.padheight, self.padwidth, self.pinshigh
+
         if self.pinshigh:
-            self.generator.height = self.padheight
-            self.generator.width = self.padwidth
-            # left going down
-            rowlen = self.pitch * (self.pinshigh - 1)
-            y = rowlen*-0.5
-            for padnum in range (1, 1 + self.pinshigh):
-                self.generator.add_pad(left_x,y,str(padnum))
-                y += self.pitch
-            # draw right side going up
-            y = rowlen*0.5
-            for padnum in range (self.pinshigh+self.pinswide+1, self.pinshigh*2+self.pinswide+1):
-                self.generator.add_pad(-left_x,y,str(padnum))
-                y -= self.pitch
+            self.rowofpads((left_x, 0), "down", 1, self.pinshigh)
+            self.rowofpads((-left_x, 0),"up", self.pinshigh + self.pinswide + 1, self.pinshigh)
         if self.pinswide:
-            # draw bottom
             self.rowofpads([0,(self.height+self.padwidth)*0.5], dir_bottom, self.pinshigh+1, self.pinswide)
-            # draw top
             self.rowofpads([0,-(self.height+self.padwidth)*0.5], dir_top, 2*self.pinshigh+self.pinswide+1, self.pinswide)
 
     def qfn(self):
@@ -373,18 +360,19 @@ class Footgen(object):
 
     def silkbox(self, w=None, h=None, notch=None, silkwidth=0.155, arc=None, circle=None, nosides=False):
         self.generator.silkwidth = silkwidth
-        if not h:
+
+        if h is None:
             h = w
-        if notch:
+        if notch is not None:
             pullback = notch
         else:
             pullback = 0.0
-        if notch:
+        if notch is not None:
             self.generator.silk_line(-0.5*w+pullback, -0.5*h, -0.5*w, -0.5*h+pullback)
-        if arc:
+        if arc is not None:
             self.generator.silk_arc(0, -0.5*h, arc,-0.5*h, 180.0)
-        if circle:
-            self.generator.silk_circle(-0.5*w, -0.5*h-circle, circle)
+        if circle is not None:
+            self.generator.silk_circle(-0.5*w+2*circle, -0.5*h+2*circle, circle)
         if not nosides:
             # left
             self.generator.silk_line(-0.5*w, -0.5*h+pullback, -0.5*w, 0.5*h)
