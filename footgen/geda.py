@@ -90,7 +90,7 @@ class Generator():
             *self.mm_to_geda(x1, y1, x2, y2, self.silkwidth)
         )
 
-    def _silk_arc(self, cx, cy, width, height, start, delta):
+    def _silk_arc(self, cx, cy, half_width, half_height, start, delta):
         self.fp += '\tElementArc [{0:d}nm {1:d}nm {2:d}nm {3:d}nm {start:d} {delta:d} {4:d}nm]\n'.format(
             *self.mm_to_geda(cx, cy, width, height, self.silkwidth),
             start=int(round(start)), delta=int(round(delta))
@@ -101,8 +101,8 @@ class Generator():
         alpha = math.radians(angle)
         d = math.sqrt(dx*dx + dy*dy)
 
-        # diameter of the circle of which the arc is a part
-        D = d / math.sin(math.pi - alpha/2)
+        # radius of the circle of which the arc is a part
+        r = d / (2.0 * math.sin(math.pi - alpha/2))
         H = d / math.tan(math.pi - alpha/2)
 
         # center point
@@ -111,10 +111,10 @@ class Generator():
         # start angle
         start = math.degrees(math.atan2(y1-cy, x1-cx))
 
-        self._silk_arc(cx, cy, D, D, start, angle)
+        self._silk_arc(cx, cy, r, r, start, angle)
 
     def silk_circle(self, x, y, radius):
-        self._silk_arc(x, y, 2*radius, 2*radius, 0, 360)
+        self._silk_arc(x, y, radius, radius, 0, 360)
 
     def finish(self):
         self.fp += ")\n"
