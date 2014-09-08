@@ -11,9 +11,9 @@ def pciecard(npins, name):
     x = 45.65 # mm
     y = -3.5 # mm
     for i in range(1,1+npins/2):
-        g.options = "nopaste"
+        g.options_list = ["nopaste"]
         g.add_pad(x,y,"B" + str(i))
-        g.options = "nopaste bottom"
+        g.options_list = ["nopaste", "bottom"]
         g.add_pad(x,y,"A" + str(i))
         if i == 11:
             x += 3.0 # mm, key

@@ -20,9 +20,16 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-class Generator():
+from footgen.generator import BaseGenerator
+
+import warnings
+
+nopaste_suppress = False
+round_suppress = False
+
+class Generator(BaseGenerator):
     def __init__(self, part): # part name
-        self.options = "" # "cir" circle pad (BGA) "round" rounded corners "bottom" on bottom of board
+        self.options_list = [] # "cir" circle pad (BGA) "round" rounded corners "bottom" on bottom of board
         self.diameter = 1 # used for circular pads, mm
         self.width = 1 # pad x dimension or silk width
         self.height = 1 # pad y dimension
@@ -38,11 +45,26 @@ class Generator():
         return
     def mm_to_geda(self,mm):
         return int(round(mm * 1.0e6))
+
     def add_pad(self, x, y, name):
-        if (self.options.find("round") != -1) | (self.options.find("cir") != -1):
-            flags = ""
-        else:
-            flags = "square"
+        self._sanitize_options(name)
+
+        if "nopaste" in self.options_list:
+            global nopaste_suppress
+            if not nopaste_suppress:
+                warnings.warn("nopaste option for pad {} ignored, not valid in gEDA/pcb\n"
+                              "Future nopaste warnings suppressed".format(name))
+                nopaste_suppress = True
+
+        if "round" in self.options_list:
+            global round_suppress
+            if not round_suppress:
+                warnings.warn("round option for pad {} ignored, not valid in gEDA/pcb\n"
+                              "Future round warnings suppressed".format(name))
+                round_suppress = True
+
+        flags = ', '.join(self._unhandled_options())
+
         if self.drill > 0:
             self.fp += "\tPin[ %dnm %dnm %dnm %dnm %dnm %dnm \"%s\" \"%s\" \"%s\"]\n" % (self.mm_to_geda(x),self.mm_to_geda(y),self.mm_to_geda(self.diameter),\
                                                                                          self.mm_to_geda(self.clearance*2),\
@@ -65,7 +87,7 @@ class Generator():
             y2 = y
         self.fp += "\tPad[%dnm %dnm %dnm %dnm %dnm %dnm %dnm \"%s\" \"%s\" \"%s\"]\n"\
             % (self.mm_to_geda(x1), self.mm_to_geda(y1), self.mm_to_geda(x2), self.mm_to_geda(y2),\
-                   self.mm_to_geda(self.width), self.mm_to_geda(self.clearance*2), self.mm_to_geda(self.mask_clearance+self.width), name, name, flags)
+                   self.mm_to_geda(linewidth), self.mm_to_geda(self.clearance*2), self.mm_to_geda(self.mask_clearance+linewidth), name, name, flags)
     # draw silkscreen line
     def silk_line(self, x1, y1, x2, y2):
         self.fp += "\tElementLine [%dnm %dnm %dnm %dnm %dnm]\n" % (self.mm_to_geda(x1), self.mm_to_geda(y1),\
