@@ -20,6 +20,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
+import math
+
 class Generator():
     def __init__(self, part): # part name
         self.options = "" # "cir" circle pad (BGA) "round" rounded
@@ -87,6 +89,32 @@ class Generator():
         self.fp += '\tElementLine [{0:d}nm {1:d}nm {2:d}nm {3:d}nm {4:d}nm]\n'.format(
             *self.mm_to_geda(x1, y1, x2, y2, self.silkwidth)
         )
+
+    def _silk_arc(self, cx, cy, width, height, start, delta):
+        self.fp += '\tElementArc [{0:d}nm {1:d}nm {2:d}nm {3:d}nm {start:d} {delta:d} {4:d}nm]\n'.format(
+            *self.mm_to_geda(cx, cy, width, height, self.silkwidth),
+            start=int(round(start)), delta=int(round(delta))
+        )
+
+    def silk_arc(self, x1, y1, x2, y2, angle):
+        dx, dy = x1-x2, y1-y2
+        alpha = math.radians(angle)
+        d = math.sqrt(dx*dx + dy*dy)
+
+        # diameter of the circle of which the arc is a part
+        D = d / math.sin(math.pi - alpha/2)
+        H = d / math.tan(math.pi - alpha/2)
+
+        # center point
+        cx, cy = (x1 + x2)/2.0 - H*dy/d, (x1 + y2)/2.0 + H*dx/d
+
+        # start angle
+        start = math.degrees(math.atan2(y1-cy, x1-cx))
+
+        self._silk_arc(cx, cy, D, D, start, angle)
+
+    def silk_circle(self, x, y, radius):
+        self._silk_arc(x, y, 2*radius, 2*radius, 0, 360)
 
     def finish(self):
         self.fp += ")\n"
