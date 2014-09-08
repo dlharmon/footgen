@@ -20,7 +20,6 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-<<<<<<< HEAD
 from footgen.generator import BaseGenerator
 
 import warnings
@@ -31,14 +30,13 @@ round_suppress = False
 class Generator(BaseGenerator):
     def __init__(self, part): # part name
         self.options_list = [] # "cir" circle pad (BGA) "round" rounded corners "bottom" on bottom of board
-=======
+
 import math
 
 class Generator():
     def __init__(self, part): # part name
         self.options = "" # "cir" circle pad (BGA) "round" rounded
                           # corners "bottom" on bottom of board
->>>>>>> 20ecb5aab29a54011d2380d22b6b8f0b0606dade
         self.diameter = 1 # used for circular pads, mm
         self.width = 1 # pad x dimension or silk width
         self.height = 1 # pad y dimension
@@ -54,7 +52,6 @@ class Generator():
             part=part, *self.mm_to_geda(refdesx, -1.0-refdesy)
         )
         return
-<<<<<<< HEAD
     def mm_to_geda(self,mm):
         return int(round(mm * 1.0e6))
 
@@ -68,14 +65,15 @@ class Generator():
                               "Future nopaste warnings suppressed".format(name))
                 nopaste_suppress = True
 
-        if "round" in self.options_list:
-            global round_suppress
-            if not round_suppress:
-                warnings.warn("round option for pad {} ignored, not valid in gEDA/pcb\n"
-                              "Future round warnings suppressed".format(name))
-                round_suppress = True
+    def mm_to_geda(self, *mm):
+        return (int(round(value * 1.0e6)) for value in mm)
 
-        flags = ', '.join(self._unhandled_options())
+    def _add_pin(self, x, y, name, flags):
+        self.fp += '\tPin[ {0:d}nm {1:d}nm {2:d}nm {3:d}nm {4:d}nm {5:d}nm "{name:s}" "{name:s}" "{flags:s}"]\n'.format(
+            *self.mm_to_geda(x, y, self.diameter, self.clearance*2,
+                             self.mask_clearance+self.diameter, self.drill),
+            name=name,flags=flags
+        )
 
         if self.drill > 0:
             self.fp += "\tPin[ %dnm %dnm %dnm %dnm %dnm %dnm \"%s\" \"%s\" \"%s\"]\n" % (self.mm_to_geda(x),self.mm_to_geda(y),self.mm_to_geda(self.diameter),\
@@ -83,7 +81,6 @@ class Generator():
                                                                                          self.mm_to_geda(self.mask_clearance+self.diameter),\
                                                                                          self.mm_to_geda(self.drill),name,name,flags)
             return
-=======
 
     def mm_to_geda(self, *mm):
         return (int(round(value * 1.0e6)) for value in mm)
@@ -96,7 +93,6 @@ class Generator():
         )
 
     def _add_pad(self, x, y, name, flags):
->>>>>>> 20ecb5aab29a54011d2380d22b6b8f0b0606dade
         linewidth = min(self.height,self.width)
         linelength = abs(self.height-self.width)
 
@@ -112,12 +108,10 @@ class Generator():
             x2 = x + linelength/2
             y1 = y
             y2 = y
-<<<<<<< HEAD
         self.fp += "\tPad[%dnm %dnm %dnm %dnm %dnm %dnm %dnm \"%s\" \"%s\" \"%s\"]\n"\
             % (self.mm_to_geda(x1), self.mm_to_geda(y1), self.mm_to_geda(x2), self.mm_to_geda(y2),\
                    self.mm_to_geda(linewidth), self.mm_to_geda(self.clearance*2), self.mm_to_geda(self.mask_clearance+linewidth), name, name, flags)
     # draw silkscreen line
-=======
         self.fp += '\tPad[{0:d}nm {1:d}nm {2:d}nm {3:d}nm {4:d}nm {5:d}nm {6:d}nm "{name:s}" "{name:s}" "{flags:s}"]\n'.format(
             *self.mm_to_geda(x1, y1, x2, y2, linewidth, self.clearance*2,
                              self.mask_clearance+linewidth),
@@ -135,7 +129,6 @@ class Generator():
         else:
             self._add_pad(x, y, name, flags)
 
->>>>>>> 20ecb5aab29a54011d2380d22b6b8f0b0606dade
     def silk_line(self, x1, y1, x2, y2):
         self.fp += '\tElementLine [{0:d}nm {1:d}nm {2:d}nm {3:d}nm {4:d}nm]\n'.format(
             *self.mm_to_geda(x1, y1, x2, y2, self.silkwidth)
