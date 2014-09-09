@@ -24,6 +24,7 @@ from footgen.generator import BaseGenerator
 
 import warnings
 import math
+import itertools
 
 nopaste_suppress = False
 round_suppress = False
@@ -45,45 +46,6 @@ class Generator(BaseGenerator):
         self.fp = 'Element["" "{part}" "" "" 1000 1000 {:d}nm {:d}nm 0 100 ""]\n(\n'.format(
             part=part, *self.mm_to_geda(refdesx, -1.0-refdesy)
         )
-        return
-    def mm_to_geda(self,mm):
-        return int(round(mm * 1.0e6))
-
-    def add_pad(self, x, y, name):
-        self._sanitize_options(name)
-
-        if "nopaste" in self.options_list:
-            global nopaste_suppress
-            if not nopaste_suppress:
-                warnings.warn("nopaste option for pad {} ignored, not valid in gEDA/pcb\n"
-                              "Future nopaste warnings suppressed".format(name))
-                nopaste_suppress = True
-
-        if "round" in self.options_list:
-            global round_suppress
-            if not round_suppress:
-                warnings.warn("round option for pad {} ignored, not valid in gEDA/pcb\n"
-                              "Future round warnings suppressed".format(name))
-                round_suppress = True
-
-            flags = ', '.join(self._unhandled_options())
-
-    def mm_to_geda(self, *mm):
-        return (int(round(value * 1.0e6)) for value in mm)
-
-    def _add_pin(self, x, y, name, flags):
-        self.fp += '\tPin[ {0:d}nm {1:d}nm {2:d}nm {3:d}nm {4:d}nm {5:d}nm "{name:s}" "{name:s}" "{flags:s}"]\n'.format(
-            *self.mm_to_geda(x, y, self.diameter, self.clearance*2,
-                             self.mask_clearance+self.diameter, self.drill),
-            name=name,flags=flags
-        )
-
-        if self.drill > 0:
-            self.fp += "\tPin[ %dnm %dnm %dnm %dnm %dnm %dnm \"%s\" \"%s\" \"%s\"]\n" % (self.mm_to_geda(x),self.mm_to_geda(y),self.mm_to_geda(self.diameter),\
-                                                                                         self.mm_to_geda(self.clearance*2),\
-                                                                                         self.mm_to_geda(self.mask_clearance+self.diameter),\
-                                                                                         self.mm_to_geda(self.drill),name,name,flags)
-            return
 
     def mm_to_geda(self, *mm):
         return (int(round(value * 1.0e6)) for value in mm)
@@ -111,10 +73,6 @@ class Generator(BaseGenerator):
             x2 = x + linelength/2
             y1 = y
             y2 = y
-        self.fp += "\tPad[%dnm %dnm %dnm %dnm %dnm %dnm %dnm \"%s\" \"%s\" \"%s\"]\n"\
-            % (self.mm_to_geda(x1), self.mm_to_geda(y1), self.mm_to_geda(x2), self.mm_to_geda(y2),\
-                   self.mm_to_geda(linewidth), self.mm_to_geda(self.clearance*2), self.mm_to_geda(self.mask_clearance+linewidth), name, name, flags)
-    # draw silkscreen line
         self.fp += '\tPad[{0:d}nm {1:d}nm {2:d}nm {3:d}nm {4:d}nm {5:d}nm {6:d}nm "{name:s}" "{name:s}" "{flags:s}"]\n'.format(
             *self.mm_to_geda(x1, y1, x2, y2, linewidth, self.clearance*2,
                              self.mask_clearance+linewidth),
@@ -122,11 +80,30 @@ class Generator(BaseGenerator):
         )
 
     def add_pad(self, x, y, name):
-        if (self.options.find("round") != -1 or
-            self.options.find("cir") != -1):
-            flags = ""
-        else:
-            flags = "square"
+        self._sanitize_options(name)
+
+        if "nopaste" in self.options_list:
+            global nopaste_suppress
+            if not nopaste_suppress:
+                warnings.warn("nopaste option for pad {} ignored, not valid in gEDA/pcb\n"
+                              "Future nopaste warnings suppressed".format(name))
+                nopaste_suppress = True
+
+        if "round" in self.options_list:
+            global round_suppress
+            if not round_suppress:
+                warnings.warn("round option for pad {} ignored, not valid in gEDA/pcb\n"
+                              "Future round warnings suppressed".format(name))
+                round_suppress = True
+
+        flag_list = []
+        if "circle" in self.options_list:
+            pass
+        elif "square" in self.options_list:
+            flag_list.append("square")
+
+        flags = ', '.join(itertools.chain(flag_list, self._unhandled_options()))
+
         if self.drill > 0:
             self._add_pin(x, y, name, flags)
         else:
