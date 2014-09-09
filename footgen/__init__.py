@@ -70,9 +70,12 @@ class Footgen(object):
         self.generator.add_pad(x,y, name)
 
     def rowofpads(self, pos, whichway, startnum, numpads):
-        """ draw a row of rectangular pads
+        """draw a row of rectangular pads
         pos is the center position [x,y]
-        whichway is "up" "down" "left" or "right" """
+        whichway is "up" "down" "left" or "right"
+
+        The options_list of the generator is not modified.
+        """
         rowlen = self.pitch * (numpads - 1)
         if whichway == "down":
             x = pos[0]
@@ -155,7 +158,9 @@ class Footgen(object):
         self.generator.diameter = olddia
 
     def sm_pads(self):
-        """ create pads for a dual or quad SM package """
+        """Create pads for a dual or quad SM package.
+
+        The options_list of the generator is not modified."""
         left_x = -0.5*(self.width+self.padwidth)
         dir_bottom = "right"
         dir_top = "left"
@@ -171,11 +176,21 @@ class Footgen(object):
             self.rowofpads([0,(self.height+self.padwidth)*0.5], dir_bottom, self.pinshigh+1, self.pinswide)
             self.rowofpads([0,-(self.height+self.padwidth)*0.5], dir_top, 2*self.pinshigh+self.pinswide+1, self.pinswide)
 
-    def qfn(self):
+    def qfn(self, square=True):
+        if square:
+            self.generator.options_list.append("square")
+        else:
+            self.generator.options_list.append("rounded")
+
         self.pinshigh = self.pins/4
         self.pinswide = self.pinshigh
         self.height = self.width
         self.sm_pads()
+
+        if square:
+            self.generator.options_list.remove("square")
+        else:
+            self.generator.options_list.remove("rounded")
 
     def so(self):
         """ create a dual row surface mount footprint uses pins, padwidth, padheight, pitch """
