@@ -26,9 +26,6 @@ import warnings
 import math
 import itertools
 
-nopaste_suppress = False
-round_suppress = False
-
 class Generator(BaseGenerator):
     def __init__(self, part): # part name
         self.options_list = [] # "cir" circle pad (BGA) "round" rounded corners "bottom" on bottom of board
@@ -82,25 +79,22 @@ class Generator(BaseGenerator):
     def add_pad(self, x, y, name):
         self._sanitize_options(name)
 
-        if "nopaste" in self.options_list:
-            global nopaste_suppress
-            if not nopaste_suppress:
-                warnings.warn("nopaste option for pad {} ignored, not valid in gEDA/pcb\n"
-                              "Future nopaste warnings suppressed".format(name))
-                nopaste_suppress = True
-
-        if "round" in self.options_list:
-            global round_suppress
-            if not round_suppress:
-                warnings.warn("round option for pad {} ignored, not valid in gEDA/pcb\n"
-                              "Future round warnings suppressed".format(name))
-                round_suppress = True
-
         flag_list = []
         if "circle" in self.options_list:
             pass
-        elif "square" in self.options_list:
+        elif "round" in self.options_list:
+            pass
+        else:
             flag_list.append("square")
+
+        if "nopaste" in self.options_list:
+            flag_list.append("nopaste")
+
+        if "bottom" in self.options_list:
+            flag_list.append("onsolder")
+
+        if "noplate" in self.options_list:
+            flag_list.append("hole")
 
         flags = ', '.join(itertools.chain(flag_list, self._unhandled_options()))
 
