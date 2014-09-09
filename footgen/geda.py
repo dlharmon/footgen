@@ -26,6 +26,8 @@ import warnings
 import math
 import itertools
 
+masked_suppressed = False
+
 class Generator(BaseGenerator):
     def __init__(self, part): # part name
         self.options_list = [] # "cir" circle pad (BGA) "round" rounded corners "bottom" on bottom of board
@@ -78,6 +80,13 @@ class Generator(BaseGenerator):
 
     def add_pad(self, x, y, name):
         self._sanitize_options(name)
+
+        if "masked" in self.options_list:
+            global masked_suppress
+            if not masked_suppress:
+                warnings.warn("masked option for pad {} ignored, not valid in gEDA/pcb\n"
+                              "Future masked warnings suppressed".format(name))
+                masked_suppress = True
 
         flag_list = []
         if "circle" in self.options_list:
