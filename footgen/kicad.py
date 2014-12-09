@@ -150,7 +150,7 @@ class Generator(BaseGenerator):
         drillstring = ""
         if self.drill > 0:
             drillstring = " (drill {:.6f})".format(self.drill)
-            if"noplate" in self.options_list:
+            if not "noplate" in self.options_list:
                 padtype = "thru_hole"
             else:
                 padtype = "np_thru_hole"
