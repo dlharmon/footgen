@@ -258,6 +258,8 @@ class Footgen(object):
             for pinnum in range (1+self.pins/2, self.pins+1):
                 self.generator.add_pad(x,y,str(pinnum))
                 y -= self.pitch
+        if self.silkboxheight == None:
+            return
         silky = max(self.pins*self.pitch*0.25,self.silkboxheight*0.5)
         silkx = max((self.width+self.pitch)*0.5,self.silkboxwidth*0.5)
         if self.mirror:
