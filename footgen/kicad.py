@@ -85,6 +85,7 @@ class Generator(BaseGenerator):
         self.clearance = 0.2
         self.mask_clearance = False
         self.part = part
+        self.thermal = 'default'
         self.silkwidth = 0.15
         self.mirror = ""
         self.silklayer = "F.SilkS"
@@ -159,6 +160,8 @@ class Generator(BaseGenerator):
         self.fp += layers
         if self.mask_clearance:
             self.fp += "(solder_mask_margin {:.6f})".format(self.mask_clearance)
+        if self.thermal == 'solid':
+            self.fp += "(zone_connect 2)"
         self.fp += "  )\n"
         return
 

@@ -141,9 +141,11 @@ class Footgen(object):
         self.generator.diameter = pad
         print size, pad
         self.generator.options_list = ["circle"]
+        self.generator.thermal = 'solid'
         for x in range(columns):
             for y in range(rows):
                 self.generator.add_pad((x-(columns-1)*0.5)*pitch,(y-(rows-1)*0.5)*pitch,pin)
+        self.generator.thermal = 'default'
 
     def add_via(self, pin="1", x=0.0, y=0.0, size=0.3302, pad=0.7):
         """ add a single via to the footprint """
