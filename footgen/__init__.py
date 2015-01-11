@@ -240,13 +240,13 @@ class Footgen(object):
         self.generator.width = self.tabwidth
         self.generator.add_pad(0,taby,str(self.pins+1))
 
-    def dip(self):
+    def dip(self, pin1shape="square", draw_silk=True):
         """ DIP and headers, set width to 0 and pincount to 2x the desired for SIP"""
         self.generator.drill = self.drill
         self.generator.diameter = self.diameter
         self.generator.height = self.diameter
         self.generator.width = self.diameter
-        self.generator.options_list = ["square"]
+        self.generator.options_list = [pin1shape]
         y = -(self.pins*0.5-1.0)*self.pitch*0.5
         x = self.width*0.5
         if self.mirror:
@@ -260,6 +260,8 @@ class Footgen(object):
             for pinnum in range (1+self.pins/2, self.pins+1):
                 self.generator.add_pad(x,y,str(pinnum))
                 y -= self.pitch
+        if draw_silk == False:
+            return
         if self.silkboxheight == None:
             return
         silky = max(self.pins*self.pitch*0.25,self.silkboxheight*0.5)
@@ -269,7 +271,7 @@ class Footgen(object):
         self.box_corners(silkx,silky,-silkx,-silky)
         self.box_corners(-silkx,-silky,-silkx+self.pitch,-silky+self.pitch)
 
-    def dih(self):
+    def dih(self, pin1shape="square", draw_silk=True):
         """ like DIP, but numbered across and then down instead of counterclockwise """
         self.generator.drill = self.drill
         self.generator.diameter = self.diameter
@@ -277,6 +279,7 @@ class Footgen(object):
         self.generator.width = self.diameter
         y = -(self.pins*0.5-1.0)*self.pitch*0.5
         x = self.width*0.5
+        self.generator.options_list = [pin1shape]
         for pinnum in range (1,1+self.pins,2):
             self.generator.add_pad(-x,y,str(pinnum))
             self.generator.options_list = ["circle"]
@@ -286,16 +289,18 @@ class Footgen(object):
             for pinnum in range (2,1+self.pins,2):
                 self.generator.add_pad(x,y,str(pinnum))
                 y += self.pitch
+        if draw_silk == False:
+            return
         silky = max(self.pins*self.pitch*0.25,self.silkboxheight*0.5)
         silkx = max((self.width+self.pitch)*0.5,self.silkboxwidth*0.5)
         self.box_corners(silkx,silky,-silkx,-silky)
         self.box_corners(-silkx,-silky,-silkx+self.pitch,-silky+self.pitch)
 
-    def sip(self):
+    def sip(self, pin1shape="square", draw_silk=True):
         """ generates a single in line through hole footprint """
         self.width = 0
         self.pins *= 2
-        self.dip()
+        self.dip(pin1shape=pin1shape, draw_silk=draw_silk)
         self.pins /= 2
 
     # BGA row names
