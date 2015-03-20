@@ -112,7 +112,7 @@ class Generator(BaseGenerator):
         else:
             self._add_pad(x, y, name, flags)
 
-    def silk_line(self, x1, y1, x2, y2):
+    def silk_line(self, x1, y1, x2, y2, layer = None):
         self.fp += '\tElementLine [{0:d}nm {1:d}nm {2:d}nm {3:d}nm {4:d}nm]\n'.format(
             *self.mm_to_geda(x1, y1, x2, y2, self.silkwidth)
         )
@@ -123,7 +123,7 @@ class Generator(BaseGenerator):
             start=int(round(start)), delta=int(round(delta))
         )
 
-    def silk_arc(self, x1, y1, x2, y2, angle):
+    def silk_arc(self, x1, y1, x2, y2, angle, layer = None):
         dx, dy = x1-x2, y1-y2
         alpha = math.radians(angle)
         d = math.sqrt(dx*dx + dy*dy)
