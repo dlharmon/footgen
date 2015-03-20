@@ -48,9 +48,11 @@ class Footgen(object):
         self.silkboxwidth = 0
         self.tabheight = None
         self.tabwidth = None
-        self.mirror = False # mirror the part about the Y axis, currently supported by BGA, DIH, DIP
         self.omitballs = "" # BGA
         self.diameter = 0
+        self.add_pad = self.generator.add_pad
+        self.silk_line = self.generator.silk_line
+
     def new_footprint(self, name=None):
         if "geda" in self.output_format:
             self.generator = geda.Generator(name)
@@ -63,245 +65,354 @@ class Footgen(object):
         with open(self.name, "w") as f:
             f.write(fp)
 
-    def add_pad(self, name, x, y, xsize, ysize):
-        """ add a surface mount pad """
-        self.generator.width = xsize
-        self.generator.height = ysize
-        self.generator.add_pad(x,y, name)
-
-    def rowofpads(self, pos, whichway, startnum, numpads):
-        """draw a row of rectangular pads
-        pos is the center position [x,y]
-        whichway is "up" "down" "left" or "right"
-
-        The options_list of the generator is not modified.
-        """
-        rowlen = self.pitch * (numpads - 1)
-        if whichway == "down":
-            x = pos[0]
-            y = pos[1] - rowlen*0.5
-            self.generator.height = self.padheight
-            self.generator.width = self.padwidth
-            for padnum in range (startnum, startnum+numpads):
-                self.generator.add_pad(x,y,str(padnum))
-                y = y + self.pitch
-        elif whichway == "up":
-            x = pos[0]
-            y = pos[1] + rowlen*0.5
-            self.generator.height = self.padheight
-            self.generator.width = self.padwidth
-            for padnum in range (startnum, startnum+numpads):
-                self.generator.add_pad(x,y,str(padnum))
-                y = y - self.pitch
-        elif whichway == "right":
-            x = pos[0] - rowlen*0.5
-            y = pos[1]
-            self.generator.height = self.padwidth
-            self.generator.width = self.padheight
-            for padnum in range (startnum, startnum+numpads):
-                self.generator.add_pad(x,y,str(padnum))
-                x = x + self.pitch
-        elif whichway == "left":
-            x = pos[0] + rowlen*0.5
-            y = pos[1]
-            self.generator.height = self.padwidth
-            self.generator.width = self.padheight
-            for padnum in range (startnum, startnum+numpads):
-                self.generator.add_pad(x,y,str(padnum))
-                x = x - self.pitch
-
     def thermal_pad(self, w, h=None, position = [0,0], coverage = 0.5, dots=[2,2], pin=None):
         """ draw a thermal pad """
         if not h:
             h = w
-        if not pin:
-            pin = str(self.pins+1)
-        self.generator.width = w
-        self.generator.height = h
-        self.generator.options_list = ["nopaste"]
-        self.generator.add_pad(0,0,pin)
-        self.generator.options_list = []
+        self.add_pad(name = str(pin),
+                     x = position[0],
+                     y = position[1],
+                     xsize = w,
+                     ysize = h,
+                     paste = False
+        )
         dotsizex = w/dots[0]
         dotsizey = h/dots[1]
         scale = math.sqrt(coverage)
-        self.generator.height = dotsizey*scale
-        self.generator.width = dotsizex*scale
         offsetx = dotsizex*(dots[0]-1)*-0.5
         offsety = dotsizey*(dots[1]-1)*-0.5
         for x in range(dots[0]):
             for y in range(dots[1]):
-                self.generator.add_pad(x*dotsizex+offsetx,y*dotsizey+offsety,str(self.pins+1))
+                self.add_pad(name = str(pin),
+                             x = x*dotsizex + offsetx,
+                             y = y*dotsizey + offsety,
+                             xsize = dotsizex*scale,
+                             ysize = dotsizey*scale)
 
-    def via_array(self, columns=None, rows=None, pitch = None, size = 0.3302, pad = 0.7, pin = None):
+    def via_array(self, columns=None, rows=None, pitch = 1.0, size = 0.3302, pad = 0.7, pin = None):
         if not rows:
             rows = columns
-        if not pin:
-            pin = str(self.pins+1)
-        self.generator.drill = size
-        self.generator.diameter = pad
-        print size, pad
-        self.generator.options_list = ["circle"]
-        self.generator.thermal = 'solid'
         for x in range(columns):
             for y in range(rows):
-                self.generator.add_pad((x-(columns-1)*0.5)*pitch,(y-(rows-1)*0.5)*pitch,pin)
-        self.generator.thermal = 'default'
+                self.add_pad(name = str(pin),
+                             x = (x-(columns-1)*0.5)*pitch,
+                             y = (y-(rows-1)*0.5)*pitch,
+                             diameter = pad,
+                             shape = "circle",
+                             drill = size
+                         )
 
     def add_via(self, pin="1", x=0.0, y=0.0, size=0.3302, pad=0.7):
         """ add a single via to the footprint """
-        oldopts = self.generator.options_list
-        olddia = self.generator.diameter
-        self.generator.drill = size
-        self.generator.diameter = pad
-        self.generator.options_list = ["circle"]
-        self.generator.add_pad(x,y,pin)
-        self.generator.options_list = oldopts
-        self.generator.drill = 0
-        self.generator.diameter = olddia
+        self.add_pad(name = str(pin),
+                     x = x,
+                     y = y,
+                     diameter = pad,
+                     shape = "circle",
+                     drill = size
+        )
 
-    def sm_pads(self):
+    def sm_pads(self,
+                pitch = 0,
+                width = None,
+                height = None,
+                pinswide = 0,
+                pinshigh = 0,
+                padwidth = 1,
+                padheight = 1,
+                square = True,
+                silk_xsize = None,
+                silk_ysize = None,
+                silkwidth = 0.155,
+                silk_pin1 = 'circle'):
         """Create pads for a dual or quad SM package.
+        """
 
-        The options_list of the generator is not modified."""
-        left_x = -0.5*(self.width+self.padwidth)
-        dir_bottom = "right"
-        dir_top = "left"
-        if self.mirror:
-            left_x *= -1
-            dir_bottom = "left"
-            dir_top = "right"
+        left_x = -0.5*(width+padwidth)
 
-        if self.pinshigh:
-            self.rowofpads((left_x, 0), "down", 1, self.pinshigh)
-            self.rowofpads((-left_x, 0),"up", self.pinshigh + self.pinswide + 1, self.pinshigh)
-        if self.pinswide:
-            self.rowofpads([0,(self.height+self.padwidth)*0.5], dir_bottom, self.pinshigh+1, self.pinswide)
-            self.rowofpads([0,-(self.height+self.padwidth)*0.5], dir_top, 2*self.pinshigh+self.pinswide+1, self.pinswide)
+        if pinshigh:
+            rowlen = pitch * (pinshigh - 1)
+            x = left_x
+            y = 0 - rowlen*0.5
+            for padnum in range (1, 1+pinshigh):
+                self.add_pad(name = str(padnum),
+                             x = x,
+                             y = y,
+                             xsize = padwidth,
+                             ysize = padheight,
+                             shape = 'rect' if square else 'oval')
+                y += pitch
+            x = 0 - left_x
+            y = rowlen*0.5
+            for padnum in range (pinshigh + pinswide + 1,
+                                 2*pinshigh + pinswide + 1):
+                self.add_pad(name = str(padnum),
+                             x = x,
+                             y = y,
+                             xsize = padwidth,
+                             ysize = padheight,
+                             shape = 'rect' if square else 'oval')
+                y -= pitch
+        if pinswide:
+            rowlen = pitch * (pinswide - 1)
+            x = 0 - rowlen*0.5
+            y = (height+padwidth)*0.5
+            for padnum in range (pinshigh+1, pinshigh+1+pinswide):
+                self.add_pad(str(padnum),
+                             x = x,
+                             y = y,
+                             xsize = padheight,
+                             ysize = padwidth,
+                             shape = 'rect' if square else 'oval')
+                x += pitch
+            x = rowlen*0.5
+            y = -0.5*(height+padwidth)
+            for padnum in range (2*pinshigh+pinswide+1,
+                                 2*pinshigh+pinswide+1+pinswide):
+                self.add_pad(str(padnum),
+                             x = x,
+                             y = y,
+                             xsize = padheight,
+                             ysize = padwidth,
+                             shape = 'rect' if square else 'oval')
+                x -= pitch
 
-    def qfn(self, square=True):
-        if square:
-            self.generator.options_list.append("square")
-        else:
-            self.generator.options_list.append("rounded")
+        if not silk_xsize:
+            return
+        x_stop = 0.5*pitch*(pinswide-1) + .5*padheight + 2*silkwidth
+        y_stop = 0.5*pitch*(pinshigh-1) + .5*padheight + 2*silkwidth
+        if not silk_ysize:
+            silk_ysize = silk_xsize
+        x = 0.5*silk_xsize
+        y = 0.5*silk_ysize
+        croplength = 0.25
+        if "circle" in silk_pin1:
+            self.generator.silk_circle(
+                -x-croplength,-y-croplength, croplength, width = silkwidth)
+        else: # tick
+            self.silk_line(
+                -x, -y, -0.5*w-croplength, -0.5*h-croplength,
+                width = silkwidth)
+        self.silk_line(-x, -y, -x, -y_stop, width = silkwidth)
+        self.silk_line(-x, -y, -x_stop, -y, width = silkwidth)
+        self.silk_line(-x,  y, -x, y_stop, width = silkwidth)
+        self.silk_line(-x,  y, -x_stop, y, width = silkwidth)
+        self.silk_line( x, -y, x_stop, -y, width = silkwidth)
+        self.silk_line( x, -y, x, -y_stop, width = silkwidth)
+        self.silk_line( x,  y, x_stop, y, width = silkwidth)
+        self.silk_line( x,  y, x, y_stop, width = silkwidth)
 
-        self.pinshigh = self.pins/4
-        self.pinswide = self.pinshigh
-        self.height = self.width
-        self.sm_pads()
+    def qfn(self,
+            pitch = 0,
+            width = 0,
+            height = 0,
+            padheight = 1,
+            padwidth = 1,
+            pins = 0,
+            pinswide = 0,
+            square = True,
+            silk_xsize = None,
+            silk_ysize = None,
+            silkwidth = 0.155,
+            silk_pin1 = 'circle'):
+        """
+        Generate pads for a QFN or QFP type package
+        arguments:
+        pitch - pad pitch
+        width - space between inside edges of pads in x
+        height - (optional, defaults to width if 0) space between pads in y
+        padheight -
+        padwidth -
+        pins - number of pins on part
+        pinswide - (optional, defaults to pins/4 if 0) number of pins across
+        top and bottom
+        square - True: use square pads, False: use rounded pads
+        """
+        if pinswide == 0:
+            pinswide = pins/4
+        if height == 0:
+            height = width
 
-        if square:
-            self.generator.options_list.remove("square")
-        else:
-            self.generator.options_list.remove("rounded")
+        self.sm_pads(pitch = pitch,
+                     width = width,
+                     height = height,
+                     pinswide = pinswide,
+                     pinshigh = pins/2 - pinswide,
+                     padwidth = padwidth,
+                     padheight = padheight,
+                     square = square,
+                     silk_xsize = silk_xsize,
+                     silk_ysize = silk_ysize,
+                     silkwidth = 0.155,
+                     silk_pin1 = 'circle')
 
-    def so(self):
+    def so(self,
+           pitch = 0,
+           width = 0,
+           height = 0,
+           pins = 0,
+           padwidth = 1,
+           padheight = 1,
+           square=True):
         """ create a dual row surface mount footprint uses pins, padwidth, padheight, pitch """
-        if self.pins % 2:
+        if pins % 2:
             raise Exception("Error, number of pins must be even")
-        self.pinshigh = self.pins/2
-        self.pinswide = 0
-        self.sm_pads()
+        self.sm_pads(pitch = pitch,
+                     width = width,
+                     height = height,
+                     pinswide = 0,
+                     pinshigh = pins/2,
+                     padwidth = padwidth,
+                     padheight = padheight,
+                     square = square)
 
-    def soh(self):
+    def soh(self, pitch = 0, width = 0, padwidth = 1, padheight = 1, pins = 0):
         """ create a dual row surface mount header """
-        if self.pins % 2:
+        if pins % 2:
             raise Exception("Error, number of pins must be even")
-        self.pinshigh = self.pins/2
-        self.pinswide = 0
-        left_x = -0.5*(self.width+self.padwidth)
-        self.generator.height = self.padheight
-        self.generator.width = self.padwidth
+        left_x = -0.5*(width+padwidth)
         # left going down
-        rowlen = self.pitch * (self.pinshigh - 1)
+        rowlen = pitch * (pinshigh - 1)
         y = rowlen*-0.5
-        for padnum in range (self.pinshigh):
-            self.generator.add_pad(left_x,y,str(1+2*padnum))
-            self.generator.add_pad(-1.0*left_x,y,str(2+2*padnum))
-            y += self.pitch
+        for padnum in range (pins/2):
+            self.add_pad(name = str(1+2*padnum),
+                         x = left_x,
+                         y = y,
+                         xsize = padwidth,
+                         ysize = padheight)
+            self.add_pad(name = str(2+2*padnum),
+                         x = -1.0*left_x,
+                         y = y,
+                         xsize = padwidth,
+                         ysize = padheight)
+            y += pitch
 
-    def twopad(self):
+    def twopad(self, width, padwidth, padheight):
         """generate a two pad part, typically used for passives such
         as 0402, 0805, etc uses parameters width, padwidth, padheight
         """
-        self.pinshigh = 1
-        self.pinswide = 0
-        self.height = 1
-        self.pitch = 1
-        self.sm_pads()
+        self.sm_pads(pitch = 1,
+                     width = width,
+                     height = 1,
+                     pinswide = 0,
+                     pinshigh = 1,
+                     padwidth = padwidth,
+                     padheight = padheight)
 
-    def tabbed(self):
+    def tabbed(self, pitch, pins, padwidth, padheight, tabwidth, tabheight, height):
         """ generate a part with a tab such as SOT-223 """
-        totalheight = self.height+self.tabheight+self.padheight
-        totalwidth = max(self.tabwidth, (self.pins-1)*self.pitch+self.padwidth)
-        taby = -(totalheight-self.tabheight)*0.5
-        padsy = -(self.padheight - totalheight)*0.5
-        self.rowofpads([0,padsy], "right", 1, self.pins)
-        self.generator.height = self.tabheight
-        self.generator.width = self.tabwidth
-        self.generator.add_pad(0,taby,str(self.pins+1))
+        totalheight = height+tabheight+padheight
+        totalwidth = max(tabwidth, (pins-1)*pitch+padwidth)
+        taby = -(totalheight-tabheight)*0.5
+        padsy = -(padheight - totalheight)*0.5
+        rowlen = pitch * (pins - 1)
+        x = 0 - rowlen*0.5
+        y = padsy
+        for padnum in range (1, 1+pins):
+            self.add_pad(name = str(padnum),
+                         x = x,
+                         y = y,
+                         xsize = padwidth,
+                         ysize = padheight)
+            x += pitch
+        self.add_pad(name = str(pins+1),
+                     x = 0,
+                     y = taby,
+                     xsize = tabwidth,
+                     ysize = tabheight)
 
-    def dip(self, pin1shape="square", draw_silk=True):
+    def dip(self,
+            pitch,
+            pins,
+            drill,
+            diameter,
+            width,
+            pin1shape="square",
+            draw_silk=True,
+            silkboxwidth = 0,
+            silkboxheight = 0):
         """ DIP and headers, set width to 0 and pincount to 2x the desired for SIP"""
-        self.generator.drill = self.drill
-        self.generator.diameter = self.diameter
-        self.generator.height = self.diameter
-        self.generator.width = self.diameter
-        self.generator.options_list = [pin1shape]
-        y = -(self.pins*0.5-1.0)*self.pitch*0.5
-        x = self.width*0.5
-        if self.mirror:
-            x *= -1
-        for pinnum in range (1,1+self.pins/2):
-            self.generator.add_pad(-x,y,str(pinnum))
-            self.generator.options_list = ["circle"] # after pin 1 gets placed
-            y += self.pitch
-        y -= self.pitch
-        if self.width != 0:
-            for pinnum in range (1+self.pins/2, self.pins+1):
-                self.generator.add_pad(x,y,str(pinnum))
-                y -= self.pitch
+        y = -(pins*0.5-1.0)*pitch*0.5
+        x = width*0.5
+        shape = 'rect' if pin1shape=='square' else 'circle'
+        for pinnum in range (1,1+pins/2):
+            self.add_pad(name = str(pinnum),
+                         x = x,
+                         y = y,
+                         xsize = diameter,
+                         ysize = diameter,
+                         diameter = diameter,
+                         drill = drill,
+                         shape = shape)
+            shape = 'circle'
+            y += pitch
+        y -= pitch
+        if width != 0:
+            for pinnum in range (1+pins/2, pins+1):
+                self.add_pad(name = str(pinnum),
+                             x = x,
+                             y = y,
+                             drill = drill,
+                             diameter = diameter,
+                             shape = 'circle')
+                y -= pitch
         if draw_silk == False:
             return
-        if self.silkboxheight == None:
-            return
-        silky = max(self.pins*self.pitch*0.25,self.silkboxheight*0.5)
-        silkx = max((self.width+self.pitch)*0.5,self.silkboxwidth*0.5)
-        if self.mirror:
-            silkx *= -1
+        silky = max(pins*pitch*0.25,silkboxheight*0.5)
+        silkx = max((width+pitch)*0.5,silkboxwidth*0.5)
         self.box_corners(silkx,silky,-silkx,-silky)
-        self.box_corners(-silkx,-silky,-silkx+self.pitch,-silky+self.pitch)
+        self.box_corners(-silkx,-silky,-silkx+pitch,-silky+pitch)
 
-    def dih(self, pin1shape="square", draw_silk=True):
+    def dih(self,
+            pitch,
+            pins,
+            width,
+            drill,
+            diameter,
+            silkboxwidth = 0,
+            silkboxheight = 0,
+            pin1shape="rect",
+            draw_silk=True):
         """ like DIP, but numbered across and then down instead of counterclockwise """
-        self.generator.drill = self.drill
-        self.generator.diameter = self.diameter
-        self.generator.height = self.diameter
-        self.generator.width = self.diameter
-        y = -(self.pins*0.5-1.0)*self.pitch*0.5
-        x = self.width*0.5
-        self.generator.options_list = [pin1shape]
-        for pinnum in range (1,1+self.pins,2):
-            self.generator.add_pad(-x,y,str(pinnum))
-            self.generator.options_list = ["circle"]
-            y += self.pitch
-        if self.width != 0:
-            y = -(self.pins/2-1)*self.pitch*0.5
-            for pinnum in range (2,1+self.pins,2):
-                self.generator.add_pad(x,y,str(pinnum))
-                y += self.pitch
+        y = -(pins*0.5-1.0)*pitch*0.5
+        x = width*0.5
+        for pinnum in range (1,1+pins,2):
+            self.add_pad(name = str(pinnum),
+                         x = -x,
+                         y = y,
+                         diameter = diameter,
+                         xsize = diameter,
+                         ysize = diameter,
+                         drill = drill,
+                         shape = pin1shape if pinnum == 1 else 'circle')
+            y += pitch
+        if width != 0:
+            y = -(pins/2-1)*pitch*0.5
+            for pinnum in range (2,1+pins,2):
+                self.add_pad(name = str(pinnum),
+                             x = x,
+                             y = y,
+                             diameter = diameter,
+                             shape = 'circle')
+                y += pitch
         if draw_silk == False:
             return
-        silky = max(self.pins*self.pitch*0.25,self.silkboxheight*0.5)
-        silkx = max((self.width+self.pitch)*0.5,self.silkboxwidth*0.5)
+        silky = max(pins*pitch*0.25,silkboxheight*0.5)
+        silkx = max((width+pitch)*0.5,silkboxwidth*0.5)
         self.box_corners(silkx,silky,-silkx,-silky)
-        self.box_corners(-silkx,-silky,-silkx+self.pitch,-silky+self.pitch)
+        self.box_corners(-silkx,-silky,-silkx+pitch,-silky+pitch)
 
-    def sip(self, pin1shape="square", draw_silk=True):
+    def sip(self, pitch, pins, drill, diameter, silkboxwidth=0, silkboxheight=0, pin1shape="square", draw_silk=True):
         """ generates a single in line through hole footprint """
-        self.width = 0
-        self.pins *= 2
-        self.dip(pin1shape=pin1shape, draw_silk=draw_silk)
-        self.pins /= 2
+        self.dip(pitch = pitch,
+                 pins = pins*2,
+                 width = 0,
+                 drill = drill,
+                 diameter = diameter,
+                 silkboxwidth = silkboxwidth,
+                 silkboxheight = silkboxheight,
+                 pin1shape=pin1shape,
+                 draw_silk=draw_silk)
 
     # BGA row names
     rowname = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K',
@@ -312,15 +423,18 @@ class Footgen(object):
                'BL', 'BM', 'BN', 'BP', 'BR', 'BT', 'BU', 'BV', 'BW', 'BY',
                'CA', 'CB', 'CC', 'CD', 'CE', 'CF', 'CG', 'CH', 'CJ', 'CK',
                'CL', 'CM', 'CN', 'CP', 'CR', 'CT', 'CU', 'CV', 'CW', 'CY']
+
     # generate ball name from row and column (for BGA)
     def ballname(self, col, row):
         return self.rowname[row-1]+str(col)
+
     # find X and Y position of ball from name
     def ballpos(self, ball_name):
         col = int("".join(filter(str.isdigit, ball_name)))
         row = 1 + self.rowname.index("".join(filter(str.isalpha, ball_name)))
         return [col,row]
-    # expand B1:C5 to list of balls
+
+    # expand an expression such as B1:C5 to list of balls
     def expandexpr(self, inputbuf):
         # single ball has no :
         if inputbuf.find(":")==-1:
@@ -342,7 +456,8 @@ class Footgen(object):
             for row in range(pos1[1], pos2[1]+1):
                 expanded = expanded + " " +"\""+ self.ballname(col, row)+"\""
         return expanded
-     # expand list of balls to omit
+
+    # expand list of balls to omit
     def expandomitlist(self, omitlist):
         expandedlist = ""
         tmpbuf = ""
@@ -358,89 +473,92 @@ class Footgen(object):
         expandedlist = expandedlist + self.expandexpr(tmpbuf)
         # debug: print expandedlist
         return expandedlist
-    def bga(self, rows, columns = None, omit = ""):
+
+    def bga(self, pitch, diameter, rows, columns = None, omit = ""):
         """ Generate a BGA footprint """
         if not columns:
             columns = rows
         # definitions needed to generate bga
         omitlist = self.expandomitlist(omit)
-        width = (columns-1)*self.pitch+self.diameter
-        height = (rows-1)*self.pitch+self.diameter
+        width = (columns-1)*pitch+diameter
+        height = (rows-1)*pitch+diameter
         # position of ball A1
-        xoff = -1*((columns+1)*self.pitch*0.5)
-        yoff = -1*((rows+1)*self.pitch*0.5)
-        ypitch = self.pitch
-        if self.mirror:
-            yoff = -yoff
-            ypitch = -ypitch
-        self.generator.options_list.append("circle")
-        self.generator.diameter = self.diameter
+        xoff = -1*((columns+1)*pitch*0.5)
+        yoff = -1*((rows+1)*pitch*0.5)
+        ypitch = pitch
         for row in range(1, rows+1):
             for col in range(1, 1+columns):
                 if omitlist.find("\""+self.ballname(col,row)+"\"")==-1:
-                    x = xoff + (self.pitch*col)
+                    x = xoff + (pitch*col)
                     y = yoff + (ypitch*row)
-                    self.generator.add_pad(x, y, self.ballname(col,row))
+                    self.add_pad(name = self.ballname(col,row),
+                                 x = x,
+                                 y = y,
+                                 diameter = diameter,
+                                 shape = 'circle')
 
-    def silkbox(self, w=None, h=None, notch=None, silkwidth=0.155, arc=None, circle=None, nosides=False):
-        self.generator.silkwidth = silkwidth
+    def silkbox(self,
+                w=None,
+                h=None,
+                notch=None,
+                silkwidth=0.155,
+                arc=None,
+                circle=None,
+                nosides=False):
 
-        if h is None:
-            h = w
+        h = h if h else w
+        pullback = notch if notch else 0.0
         if notch is not None:
-            pullback = notch
-        else:
-            pullback = 0.0
-        if notch is not None:
-            self.generator.silk_line(-0.5*w+pullback, -0.5*h, -0.5*w, -0.5*h+pullback)
+            self.silk_line(-0.5*w+pullback,
+                           -0.5*h,
+                           -0.5*w,
+                           -0.5*h+pullback,
+                           width = silkwidth)
         if arc is not None:
-            self.generator.silk_arc(0, -0.5*h, arc,-0.5*h, 180.0)
+            self.generator.silk_arc(0,
+                                    -0.5*h,
+                                    arc,
+                                    -0.5*h,
+                                    180.0,
+                                    width = silkwidth)
         if circle is not None:
-            self.generator.silk_circle(-0.5*w+2*circle, -0.5*h+2*circle, circle)
+            self.generator.silk_circle(-0.5*w+2*circle,
+                                       -0.5*h+2*circle,
+                                       circle,
+                                       width = silkwidth)
         if not nosides:
             # left
-            self.generator.silk_line(-0.5*w, -0.5*h+pullback, -0.5*w, 0.5*h)
+            self.silk_line(-0.5*w,
+                           -0.5*h+pullback,
+                           -0.5*w,
+                           0.5*h,
+                           width = silkwidth)
             # right
-            self.generator.silk_line(0.5*w, -0.5*h, 0.5*w, 0.5*h)
+            self.silk_line(0.5*w,
+                           -0.5*h,
+                           0.5*w,
+                           0.5*h,
+                           width = silkwidth)
         # bottom
-        self.generator.silk_line(-0.5*w, 0.5*h, 0.5*w, 0.5*h)
+        self.silk_line(-0.5*w,
+                       0.5*h,
+                       0.5*w,
+                       0.5*h,
+                       width = silkwidth)
         # top
-        self.generator.silk_line(-0.5*w+pullback, -0.5*h, 0.5*w, -0.5*h)
-
-
+        self.silk_line(-0.5*w+pullback,
+                       -0.5*h,
+                       0.5*w,
+                       -0.5*h,
+                       width = silkwidth)
 
     # draw silkscreen box
-    def box_corners(self, x1, y1, x2, y2):
+    def box_corners(self, x1, y1, x2, y2, width = 0.15):
         """ draw a silkscreen rectangle with corners x1,y1 and x2,y2 """
-        self.generator.silk_line(x1,y1,x2,y1)
-        self.generator.silk_line(x2,y1,x2,y2)
-        self.generator.silk_line(x2,y2,x1,y2)
-        self.generator.silk_line(x1,y2,x1,y1)
-
-    def silk_line(self, x1, y1, x2, y2):
-        """ draw a silkscreen line """
-        self.generator.silk_line(x1,y1,x2,y2)
-
-    def silk_crop(self, w=None, h=None, pin1="", croplength=0.25, silkwidth=0.155):
-        x_stop = 0.5*self.pitch*(self.pinswide-1) + .5*self.padheight + 2*silkwidth
-        y_stop = 0.5*self.pitch*(self.pinshigh-1) + .5*self.padheight + 2*silkwidth
-        self.generator.silkwidth = silkwidth
-        if not h:
-            h = w
-        x = 0.5*w
-        y = 0.5*h
-        if "circle" in pin1:
-            self.generator.silk_circle(-x-croplength,-y-croplength, croplength)
-        else: # tick
-            self.generator.silk_line(-x, -y, -0.5*w-croplength, -0.5*h-croplength)
-        self.generator.silk_line(-x, -y, -x, -y_stop)
-        self.generator.silk_line(-x, -y, -x_stop, -y)
-        self.generator.silk_line(-x,  y, -x, y_stop)
-        self.generator.silk_line(-x,  y, -x_stop, y)
-        self.generator.silk_line( x, -y, x_stop, -y)
-        self.generator.silk_line( x, -y, x, -y_stop)
-        self.generator.silk_line( x,  y, x_stop, y)
-        self.generator.silk_line( x,  y, x, y_stop)
+        self.silk_line(x1,y1,x2,y1, width = width)
+        self.silk_line(x2,y1,x2,y2, width = width)
+        self.silk_line(x2,y2,x1,y2, width = width)
+        self.silk_line(x1,y2,x1,y1, width = width)
 
 # some unit conversions to mm
 mil = 0.0254

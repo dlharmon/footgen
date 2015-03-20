@@ -1,25 +1,31 @@
 #!/usr/bin/python
 import footgen
-    
+
 def pciecard(npins, name):
     f = footgen.Footgen(name)
     g = f.generator
     g.mask_clearance = 0.0 # mm
     g.clearance = 0.0 # mm
-    g.height = 4.2 # mm
-    g.width = 0.7 # mm
     x = 45.65 # mm
     y = -3.5 # mm
     for i in range(1,1+npins/2):
-        g.options_list = ["nopaste"]
-        g.add_pad(x,y,"B" + str(i))
-        g.options_list = ["nopaste", "bottom"]
-        g.add_pad(x,y,"A" + str(i))
+        f.add_pad(name = "B"+str(i),
+                  x = x,
+                  y = y,
+                  xsize = 0.7, # mm
+                  ysize = 4.2, # mm
+                  paste = False)
+        f.add_pad(name = "A"+str(i),
+                  x = x,
+                  y = y,
+                  xsize = 0.7, # mm
+                  ysize = 4.2, # mm
+                  paste = False,
+                  bottom = True)
         if i == 11:
             x += 3.0 # mm, key
         else:
             x += 1.0 # mm
-    g.silklayer = "Edge.Cuts"
     g.silk_line(0.0, -4.5, 15.0, -4.5)
     g.silk_line(15.0, -4.5, 15.0, -12.75)
     g.silk_line(15.0, -12.75, 33.35, -12.75)
@@ -47,5 +53,3 @@ pciecard(36, "pciex1fingers")
 pciecard(64, "pciex4fingers")
 pciecard(98, "pciex8fingers")
 pciecard(164, "pciex16fingers")
-
-

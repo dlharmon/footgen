@@ -70,25 +70,10 @@
 # Embed the filename in the file, helps when inspecting the resulting PCB layout file
 # Deleted trailing spaces
 
-from footgen.generator import BaseGenerator
-
-import warnings
-
-class Generator(BaseGenerator):
+class Generator():
     def __init__(self, part): # part name
-        self.options_list = [] # "circle" circle pad (BGA) "round" rounded corners "bottom" on bottom of board
-        self.diameter = 1.0 # used for circular pads, mm
-        self.width = 1.0 # pad x dimension or silk width
-        self.height = 1.0 # pad y dimension
-        self.drill = 0.0 # drill diameter
-        self.angle = 0.0 # rotation - only kicad
-        self.clearance = 0.2
-        self.mask_clearance = False
         self.part = part
-        self.thermal = 'default'
-        self.silkwidth = 0.15
         self.mirror = ""
-        self.silklayer = "F.SilkS"
         self.fp = "(module {} (layer F.Cu)\n".format(part)
         self.fp += "  (at 0 0)\n"
         self.fp += "  (descr DocString)\n"
@@ -104,63 +89,61 @@ class Generator(BaseGenerator):
         self.fp += "    (effects (font (size 0.7 0.7) (thickness 0.127)))\n"
         self.fp += "  )\n"
         return
-    # nm, degrees
-    def add_pad(self, x, y, name, layer = None):
-        self._sanitize_options(name)
-
-        unhandled = self._unhandled_options()
-        if unhandled:
-            warnings.warn('kicad backend ingnoring unkown options "{}" for pad {}\n'.format(', '.join(unhandled), name))
-
+    # mm, degrees
+    def add_pad(self,
+                name,
+                x,
+                y,
+                xsize=None,
+                ysize=None,
+                diameter=None,
+                masked = False,
+                bottom = False,
+                paste = True,
+                drill = 0,
+                mask_clearance = None,
+                plated = True,
+                thermal = 'solid',
+                layer='F.Cu',
+                mirror = "",
+                angle=0,
+                shape="rect"):
         if "x" in self.mirror:
             x *= -1.0
         if "y" in self.mirror:
             y *= -1.0
-        shape = "rect"
-        if "circle" in self.options_list:
+        if "cir" in shape:
             shape = "circle"
-            self.width = self.diameter
-            self.height = self.diameter
-        elif "round" in self.options_list:
+            xsize = diameter
+            ysize = diameter
+        if "round" in shape:
             shape = "oval"
-        if(self.angle != 0):
-            atstring = "(at {:.6f} {:.6f} {:.6f})".format(x, y, self.angle)
+        if angle != 0:
+            atstring = "(at {:.6f} {:.6f} {:.6f})".format(x, y, angle)
         else:
             atstring = "(at {:.6f} {:.6f})".format(x, y)
-        if layer != None:
-            padtype = "smd"
-            layers = "    (layers {})\n".format(layer)
-        elif "masked" in self.options_list:
-            padtype = "smd"
-            if "bottom" in self.options_list:
-                layers = "    (layers B.Cu)\n"
-            else:
-                layers = "    (layers F.Cu)\n"
-        elif "nopaste" in self.options_list:
-            padtype = "smd"
-            if "bottom" in self.options_list:
-                layers = "    (layers B.Cu B.Mask)\n"
-            else:
-                layers = "    (layers F.Cu F.Mask)\n"
+        side = "B" if bottom else "F"
+        padtype = "smd"
+        if masked:
+            layers = "    (layers {0}.Cu)\n".format(side)
+        elif not paste:
+            layers = "    (layers {0}.Cu {0}.Mask)\n".format(side)
         else:
-            padtype = "smd"
-            if "bottom" in self.options_list:
-                layers = "    (layers B.Cu B.Mask B.Paste)\n"
-            else:
-                layers = "    (layers F.Cu F.Mask F.Paste)\n"
+            layers = "    (layers {0}.Cu {0}.Mask {0}.Paste)\n".format(side)
         drillstring = ""
-        if self.drill > 0:
-            drillstring = " (drill {:.6f})".format(self.drill)
-            if not "noplate" in self.options_list:
+        if drill > 0:
+            drillstring = " (drill {:.6f})".format(drill)
+            if plated:
                 padtype = "thru_hole"
             else:
                 padtype = "np_thru_hole"
             layers = "    (layers *.Cu *.Mask)\n"
-        self.fp += "  (pad {} {} {} {} (size {:.6f} {:.6f}){}\n".format(name, padtype, shape, atstring, self.width, self.height, drillstring)
+        self.fp += "  (pad {} {} {} {} (size {:.6f} {:.6f}){}\n".format(
+            name, padtype, shape, atstring, xsize, ysize, drillstring)
         self.fp += layers
-        if self.mask_clearance:
-            self.fp += "(solder_mask_margin {:.6f})".format(self.mask_clearance)
-        if self.thermal == 'solid':
+        if mask_clearance:
+            self.fp += "(solder_mask_margin {:.6f})".format(mask_clearance)
+        if thermal == 'solid':
             self.fp += "(zone_connect 2)"
         self.fp += "  )\n"
         return
@@ -177,29 +160,32 @@ class Generator(BaseGenerator):
         self.fp += polystring
 
     # draw silkscreen line
-    def silk_line(self, x1, y1, x2, y2):
+    def silk_line(self, x1, y1, x2, y2, layer='F.SilkS', width = 0.15):
         if "x" in self.mirror:
             x1 *= -1.0
             x2 *= -1.0
         if "y" in self.mirror:
             y1 *= -1.0
             y2 *= -1.0
-        self.fp += "  (fp_line (start {:.6f} {:.6f}) (end {:.6f} {:.6f}) (layer {}) (width {:.6f}))\n".format(x1, y1, x2, y2, self.silklayer, self.silkwidth)
-    def silk_arc(self, x1, y1, x2, y2, angle):
+        self.fp += "  (fp_line (start {:.6f} {:.6f}) (end {:.6f} {:.6f}) (layer {}) (width {:.6f}))\n".format(
+            x1, y1, x2, y2, layer, width)
+    def silk_arc(self, x1, y1, x2, y2, angle, layer = 'F.SilkS', width = 0.15):
         if "x" in self.mirror:
             x1 *= -1.0
             x2 *= -1.0
         if "y" in self.mirror:
             y1 *= -1.0
             y2 *= -1.0
-        self.fp += "  (fp_arc (start {:.6f} {:.6f}) (end {:.6f} {:.6f}) (angle {:.6f}) (layer {}) (width {:.6f}))\n".format(x1, y1, x2, y2, angle, self.silklayer, self.silkwidth)
-    def silk_circle(self, x, y, radius):
+        self.fp += "  (fp_arc (start {:.6f} {:.6f}) (end {:.6f} {:.6f}) (angle {:.6f}) (layer {}) (width {:.6f}))\n".format(
+            x1, y1, x2, y2, angle, layer, width)
+    def silk_circle(self, x, y, radius, layer = 'F.SilkS', width = 0.15):
         if "x" in self.mirror:
             x *= -1.0
         if "y" in self.mirror:
             y *= -1.0
         # DC ox oy fx fy w  DC Xcentre Ycentre Xpoint Ypoint Width Layer
-        self.fp += "  (fp_circle (center {:.6f} {:.6f}) (end {:.6f} {:.6f}) (layer {}) (width {:.6f}))\n".format(x,y,x,y+radius,self.silklayer, self.silkwidth)
+        self.fp += "  (fp_circle (center {:.6f} {:.6f}) (end {:.6f} {:.6f}) (layer {}) (width {:.6f}))\n".format(
+            x,y,x,y+radius,layer, width)
     def finish(self):
         self.fp += ")\n"
         return self.fp
