@@ -90,6 +90,8 @@ class Generator(BaseGenerator):
 
         flag_list = []
         if "circle" in self.options_list:
+            self.width = self.diameter
+            self.height = self.diameter
             pass
         elif "round" in self.options_list:
             pass
