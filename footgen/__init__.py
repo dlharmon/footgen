@@ -333,7 +333,7 @@ class Footgen(object):
             silkboxheight = 0):
         """ DIP and headers, set width to 0 and pincount to 2x the desired for SIP"""
         y = -(pins*0.5-1.0)*pitch*0.5
-        x = width*0.5
+        x = width*-0.5
         shape = 'rect' if pin1shape=='square' else 'circle'
         for pinnum in range (1,1+pins/2):
             self.add_pad(name = str(pinnum),
@@ -347,6 +347,7 @@ class Footgen(object):
             shape = 'circle'
             y += pitch
         y -= pitch
+        x *= -1
         if width != 0:
             for pinnum in range (1+pins/2, pins+1):
                 self.add_pad(name = str(pinnum),

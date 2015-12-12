@@ -130,6 +130,8 @@ class Generator():
             layers = "    (layers {0}.Cu {0}.Mask)\n".format(side)
         else:
             layers = "    (layers {0}.Cu {0}.Mask {0}.Paste)\n".format(side)
+        if layer != None:
+            layers = "    (layers {})\n".format(layer)
         drillstring = ""
         if drill > 0:
             drillstring = " (drill {:.6f})".format(drill)
