@@ -65,7 +65,7 @@ class Footgen(object):
         with open(self.name, "w") as f:
             f.write(fp)
 
-    def thermal_pad(self, w, h=None, position = [0,0], coverage = 0.5, dots=[2,2], pin=None):
+    def thermal_pad(self, w, h=None, position = [0,0], coverage = 0.5, dots=[2,2], pin=None, mask_clearance = None):
         """ draw a thermal pad """
         if not h:
             h = w
@@ -74,6 +74,7 @@ class Footgen(object):
                      y = position[1],
                      xsize = w,
                      ysize = h,
+                     mask_clearance = mask_clearance,
                      paste = False
         )
         dotsizex = w/dots[0]
@@ -98,6 +99,7 @@ class Footgen(object):
                              x = (x-(columns-1)*0.5)*pitch,
                              y = (y-(rows-1)*0.5)*pitch,
                              diameter = pad,
+                             mask_clearance = mask_clearance,
                              shape = "circle",
                              drill = size
                          )
