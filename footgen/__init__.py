@@ -89,7 +89,7 @@ class Footgen(object):
                              xsize = dotsizex*scale,
                              ysize = dotsizey*scale)
 
-    def via_array(self, columns=None, rows=None, pitch = 1.0, size = 0.3302, pad = 0.7, pin = None):
+    def via_array(self, columns=None, rows=None, pitch = 1.0, size = 0.3302, pad = 0.7, pin = None, mask_clearance = None):
         if not rows:
             rows = columns
         for x in range(columns):
