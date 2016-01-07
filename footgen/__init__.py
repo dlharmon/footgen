@@ -76,16 +76,19 @@ class Footgen(object):
                   pin = None,
                   mask_clearance = None,
                   thermal='solid',
+                  pitchy = None,
                   outer_only=False):
         if not rows:
             rows = columns
+        if not pitchy:
+            pitchy = pitch
         for x in range(columns):
             for y in range(rows):
                 if outer_only and (0 < x < columns - 1) and (0 < y < rows - 1):
                     continue
                 self.add_pad(name = str(pin),
                              x = (x-(columns-1)*0.5)*pitch,
-                             y = (y-(rows-1)*0.5)*pitch,
+                             y = (y-(rows-1)*0.5)*pitchy,
                              diameter = pad,
                              mask_clearance = mask_clearance,
                              shape = "circle",
