@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import footgen
 
+# 1 mm BGAs
 bga_names = ["F169", "FT256", "FBG484", "FBG676"]
 bga_columns = [13, 16, 22, 26]
 for i in range(len(bga_names)):
@@ -9,12 +10,14 @@ for i in range(len(bga_names)):
     f.silkbox(w=bga_columns[i]+1.0, notch=0.75)
     f.finish()
 
+# 1 mm BGA with some balls omitted
 f = footgen.Footgen("FF665")
 f.bga(rows = 26, pitch = 1.0, diameter = 0.45,
       omit = "A1,B1,G1,H1,N1,P1,W1,Y1,AE1,AF1,J9")
 f.silkbox(w=27, notch=0.75)
 f.finish()
 
+# 0.8 mm BGAs
 bga_names = ["CLG225", "CLG400"]
 bga_columns = [15, 20]
 bga_sizes = [13,17]

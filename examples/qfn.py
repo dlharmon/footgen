@@ -74,3 +74,9 @@ f.qfn(pitch = 0.5, pins = 48, width = 6.9, padheight = 0.3, padwidth = 1.5, silk
 f.thermal_pad(6, pin=49, mask_clearance = -0.43)
 f.via_array(columns=5, pitch=1.2, size=0.3, pad=0.6, pin=49, mask_clearance = -0.1)
 f.finish()
+
+f = Footgen("qfn16_4x4")
+f.qfn(pitch = 0.65, pins = 16, width = 3.1, padheight = 0.35, padwidth = 0.85, silk_xsize = 4.0)
+f.thermal_pad(2.7, dots=[2,2])
+f.via_array(columns=3, pitch=1.1, size=0.2, pad=0.5)
+f.finish()
