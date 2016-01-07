@@ -71,23 +71,20 @@
 # Deleted trailing spaces
 
 class Generator():
-    def __init__(self, part): # part name
+    def __init__(self, part, mask_margin = None, clearance = None, zone_connect=None): # part name
         self.part = part
         self.mirror = ""
         self.fp = "(module {} (layer F.Cu)\n".format(part)
         self.fp += "  (at 0 0)\n"
-        self.fp += "  (descr DocString)\n"
-        self.fp += "  (tags Keywords)\n"
-        self.fp += "  (path 50705C0D)\n"
-        self.fp += "  (solder_mask_margin 0)\n"
-        self.fp += "  (clearance 0)\n"
+        if mask_margin:
+            self.fp += "  (solder_mask_margin {})\n".format(mask_margin)
+        if clearance:
+            self.fp += "  (clearance {})\n".format(clearance)
+        if zone_connect:
+            self.fp += "  (zone_connect 2)\n"
         self.fp += "  (attr smd)"
-        self.fp += "  (fp_text reference U1 (at 0 -1.27) (layer F.SilkS)\n"
-        self.fp += "    (effects (font (size 0.7 0.7) (thickness 0.127)))\n"
-        self.fp += "  )\n"
-        self.fp += "  (fp_text value value (at 0 1.27) (layer F.SilkS) hide\n"
-        self.fp += "    (effects (font (size 0.7 0.7) (thickness 0.127)))\n"
-        self.fp += "  )\n"
+        self.fp += "  (fp_text reference U1 (at 0 -1.27) (layer F.SilkS) (effects (font (size 0.7 0.7) (thickness 0.127))))\n"
+        self.fp += "  (fp_text value value (at 0 1.27) (layer F.SilkS) hide (effects (font (size 0.7 0.7) (thickness 0.127))))\n"
         return
     # mm, degrees
     def add_pad(self,
@@ -103,8 +100,8 @@ class Generator():
                 drill = 0,
                 mask_clearance = None,
                 plated = True,
-                thermal = 'solid',
-                layer='F.Cu',
+                thermal = None,
+                layer=None,
                 mirror = "",
                 angle=0,
                 shape="rect"):
@@ -125,13 +122,13 @@ class Generator():
         side = "B" if bottom else "F"
         padtype = "smd"
         if masked:
-            layers = "    (layers {0}.Cu)\n".format(side)
+            layers = " (layers {0}.Cu)".format(side)
         elif not paste:
-            layers = "    (layers {0}.Cu {0}.Mask)\n".format(side)
+            layers = " (layers {0}.Cu {0}.Mask)".format(side)
         else:
-            layers = "    (layers {0}.Cu {0}.Mask {0}.Paste)\n".format(side)
+            layers = " (layers {0}.Cu {0}.Mask {0}.Paste)".format(side)
         if layer != None:
-            layers = "    (layers {})\n".format(layer)
+            layers = " (layers {})".format(layer)
         drillstring = ""
         if drill > 0:
             drillstring = " (drill {:.6f})".format(drill)
@@ -139,15 +136,15 @@ class Generator():
                 padtype = "thru_hole"
             else:
                 padtype = "np_thru_hole"
-            layers = "    (layers *.Cu *.Mask)\n"
-        self.fp += "  (pad {} {} {} {} (size {:.6f} {:.6f}){}\n".format(
+            layers = " (layers *.Cu *.Mask)"
+        self.fp += "  (pad {} {} {} {} (size {:.6f} {:.6f}){}".format(
             name, padtype, shape, atstring, xsize, ysize, drillstring)
         self.fp += layers
         if mask_clearance:
             self.fp += "(solder_mask_margin {:.6f})".format(mask_clearance)
         if thermal == 'solid':
             self.fp += "(zone_connect 2)"
-        self.fp += "  )\n"
+        self.fp += ")\n"
         return
 
     def add_polygon(self, points, layer="F.Cu", width = 0.0):

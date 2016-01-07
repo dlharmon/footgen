@@ -24,42 +24,19 @@
 import footgen.geda as geda
 import footgen.kicad as kicad
 
-import re
 import math
 
 class Footgen(object):
     def __init__(self, name=None, output_format="kicad"):
-        self.generator = None
-        self.output_format = output_format
-        self.new_footprint(name)
-        self.generator.mask_clearance = 0.0762
-        self.generator.clearance = 0.1524
-        self.pitch = 0.5
-        self.skew = 0.0
-        self.pins = 4
-        self.pinshigh = 0
-        self.padwidth = None
-        self.padheight = None
-        self.pitch = None
-        self.width = None
-        self.height = None
-        self.silkoffset = 0.5
-        self.silkboxheight = 0
-        self.silkboxwidth = 0
-        self.tabheight = None
-        self.tabwidth = None
-        self.omitballs = "" # BGA
-        self.diameter = 0
-        self.add_pad = self.generator.add_pad
-        self.silk_line = self.generator.silk_line
-
-    def new_footprint(self, name=None):
-        if "geda" in self.output_format:
+        if "geda" in output_format:
             self.generator = geda.Generator(name)
             self.name = name + ".fp"
         else:
             self.generator = kicad.Generator(name)
             self.name = name + ".kicad_mod"
+        self.add_pad = self.generator.add_pad
+        self.silk_line = self.generator.silk_line
+
     def finish(self):
         fp = self.generator.finish()
         with open(self.name, "w") as f:
@@ -90,7 +67,15 @@ class Footgen(object):
                              xsize = dotsizex*scale,
                              ysize = dotsizey*scale)
 
-    def via_array(self, columns=None, rows=None, pitch = 1.0, size = 0.3302, pad = 0.7, pin = None, mask_clearance = None):
+    def via_array(self,
+                  columns=None,
+                  rows=None,
+                  pitch = 1.0,
+                  size = 0.3302,
+                  pad = 0.7,
+                  pin = None,
+                  mask_clearance = None,
+                  thermal='solid'):
         if not rows:
             rows = columns
         for x in range(columns):
@@ -101,18 +86,9 @@ class Footgen(object):
                              diameter = pad,
                              mask_clearance = mask_clearance,
                              shape = "circle",
+                             thermal=thermal,
                              drill = size
                          )
-
-    def add_via(self, pin="1", x=0.0, y=0.0, size=0.3302, pad=0.7):
-        """ add a single via to the footprint """
-        self.add_pad(name = str(pin),
-                     x = x,
-                     y = y,
-                     diameter = pad,
-                     shape = "circle",
-                     drill = size
-        )
 
     def sm_pads(self,
                 pitch = 0,
