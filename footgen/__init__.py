@@ -42,15 +42,16 @@ class Footgen(object):
         with open(self.name, "w") as f:
             f.write(fp)
 
-    def thermal_pad(self, w, h=None, position = [0,0], coverage = 0.5, dots=[2,2], pin=None, mask_clearance = None):
+    def thermal_pad(self, w, h=None, position = [0,0], coverage = 0.5, dots=[2,2], pin=None, copper_expansion=0):
         """ draw a thermal pad """
         if not h:
             h = w
+        mask_clearance = -1*copper_expansion if copper_expansion else None
         self.add_pad(name = str(pin),
                      x = position[0],
                      y = position[1],
-                     xsize = w,
-                     ysize = h,
+                     xsize = w + 2*copper_expansion,
+                     ysize = h + 2*copper_expansion,
                      mask_clearance = mask_clearance,
                      paste = False
         )
