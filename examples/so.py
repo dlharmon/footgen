@@ -73,7 +73,7 @@ f.silkbox(h=12.7, w = 6.9, arc=0.5)
 f.finish()
 
 # Murata DC - DC
-f = Footgen("LX2DC2HL")
+f = Footgen("LXDC2HL")
 f.so(pitch = 1.45, pins = 4, width = .5, padheight = 0.85, padwidth = 0.6)
 f.silkbox(h=2.7, w = 2.2, arc=0.15)
 f.finish()
