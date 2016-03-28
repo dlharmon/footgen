@@ -20,14 +20,12 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-from footgen.generator import BaseGenerator
-
 import warnings
 import math
 
 masked_suppressed = False
 
-class Generator(BaseGenerator):
+class Generator():
     def __init__(self, part, mask_margin = None, clearance = None, zone_connect=None): # part name
         self.mirror = ""
         self.clearance = 0.2
