@@ -24,18 +24,12 @@ from footgen.generator import BaseGenerator
 
 import warnings
 import math
-import itertools
 
 masked_suppressed = False
 
 class Generator(BaseGenerator):
-    def __init__(self, part): # part name
-        self.options_list = [] # "cir" circle pad (BGA) "round" rounded corners "bottom" on bottom of board
-        self.diameter = 1 # used for circular pads, mm
-        self.width = 1 # pad x dimension or silk width
-        self.height = 1 # pad y dimension
-        self.drill = 0 # drill diameter
-        self.angle = 0 # rotation - only kicad
+    def __init__(self, part, mask_margin = None, clearance = None, zone_connect=None): # part name
+        self.mirror = ""
         self.clearance = 0.2
         self.silkwidth = 0.15
         self.mask_clearance = 0.075
@@ -49,83 +43,107 @@ class Generator(BaseGenerator):
     def mm_to_geda(self, *mm):
         return (int(round(value * 1.0e6)) for value in mm)
 
-    def _add_pin(self, x, y, name, flags):
-        self.fp += '\tPin[ {0:d}nm {1:d}nm {2:d}nm {3:d}nm {4:d}nm {5:d}nm "{name:s}" "{name:s}" "{flags:s}"]\n'.format(
-            *self.mm_to_geda(x, y, self.diameter, self.clearance*2,
-                             self.mask_clearance+self.diameter, self.drill),
-            name=name,flags=flags
-        )
-
-    def _add_pad(self, x, y, name, flags):
-        linewidth = min(self.height,self.width)
-        linelength = abs(self.height-self.width)
-
-        if self.height > self.width:
-            # vertcal pad
-            x1 = x
-            x2 = x
-            y1 = y - linelength/2
-            y2 = y + linelength/2
-        else:
-            # horizontal pad
-            x1 = x - linelength/2
-            x2 = x + linelength/2
-            y1 = y
-            y2 = y
-        self.fp += '\tPad[{0:d}nm {1:d}nm {2:d}nm {3:d}nm {4:d}nm {5:d}nm {6:d}nm "{name:s}" "{name:s}" "{flags:s}"]\n'.format(
-            *self.mm_to_geda(x1, y1, x2, y2, linewidth, self.clearance*2,
-                             self.mask_clearance+linewidth),
-            name=name, flags=flags
-        )
-
-    def add_pad(self, x, y, name):
-        self._sanitize_options(name)
-
-        if "masked" in self.options_list:
+    # mm, degrees
+    def add_pad(self,
+                name,
+                x,
+                y,
+                xsize=None,
+                ysize=None,
+                diameter=None,
+                masked = False,
+                bottom = False,
+                paste = True,
+                drill = 0,
+                mask_clearance = None,
+                clearance = 0.15,
+                plated = True,
+                thermal = None,
+                layer=None,
+                mirror = "",
+                angle=0,
+                shape="rect"):
+        if masked:
             global masked_suppress
             if not masked_suppress:
                 warnings.warn("masked option for pad {} ignored, not valid in gEDA/pcb\n"
                               "Future masked warnings suppressed".format(name))
                 masked_suppress = True
 
-        flag_list = []
-        if "circle" in self.options_list:
-            self.width = self.diameter
-            self.height = self.diameter
-            pass
-        elif "round" in self.options_list:
+
+        if not mask_clearance:
+            mask_clearance = 0.1
+
+        flags = ""
+
+        if 'cir' in shape:
+            xsize = diameter
+            ysize = diameter
+        elif "round" in shape:
             pass
         else:
-            flag_list.append("square")
+            flags = 'square'
 
-        if "nopaste" in self.options_list:
-            flag_list.append("nopaste")
+        if not paste:
+            flags += ", nopaste"
 
-        if "bottom" in self.options_list:
-            flag_list.append("onsolder")
+        if layer and "B" in layer:
+            flags += ", onsolder"
 
-        if "noplate" in self.options_list:
-            flag_list.append("hole")
+        if not plated:
+            flags += ", hole"
 
-        flags = ', '.join(itertools.chain(flag_list, self._unhandled_options()))
+        if "x" in mirror:
+            x *= -1.0
+        if "y" in mirror:
+            y *= -1.0
 
-        if self.drill > 0:
-            self._add_pin(x, y, name, flags)
+        if drill > 0:
+            self.fp += '\tPin[ {0:d}nm {1:d}nm {2:d}nm {3:d}nm {4:d}nm {5:d}nm '.format(
+                *self.mm_to_geda(x, y, xsize, clearance*2, mask_clearance+xsize, drill))
         else:
-            self._add_pad(x, y, name, flags)
+            linewidth = min(ysize, xsize)
+            linelength = abs(ysize - xsize)
+            if ysize > xsize:
+                # vertical pad
+                x1 = x
+                x2 = x
+                y1 = y - linelength/2
+                y2 = y + linelength/2
+            else:
+                # horizontal pad
+                x1 = x - linelength/2
+                x2 = x + linelength/2
+                y1 = y
+                y2 = y
+            self.fp += '\tPad[{0:d}nm {1:d}nm {2:d}nm {3:d}nm {4:d}nm {5:d}nm {6:d}nm '.format(
+                *self.mm_to_geda(x1, y1, x2, y2, linewidth, self.clearance*2, self.mask_clearance+linewidth))
+        self.fp += '"{name:s}" "{name:s}" "{flags:s}"]\n'.format(name=name, flags=flags)
 
-    def silk_line(self, x1, y1, x2, y2, layer = None):
-        self.fp += '\tElementLine [{0:d}nm {1:d}nm {2:d}nm {3:d}nm {4:d}nm]\n'.format(
-            *self.mm_to_geda(x1, y1, x2, y2, self.silkwidth)
+    def silk_line(self, x1, y1, x2, y2, layer='F.SilkS', width = 0.15):
+        if "x" in self.mirror:
+            x1 *= -1.0
+            x2 *= -1.0
+        if "y" in self.mirror:
+            y1 *= -1.0
+            y2 *= -1.0
+            self.fp += '\tElementLine [{0:d}nm {1:d}nm {2:d}nm {3:d}nm {4:d}nm]\n'.format(
+            *self.mm_to_geda(x1, y1, x2, y2, width)
         )
 
-    def _silk_arc(self, cx, cy, half_width, half_height, start, delta):
+    def _silk_arc(self, cx, cy, half_width, half_height, start, delta, width):
         self.fp += '\tElementArc [{0:d}nm {1:d}nm {2:d}nm {3:d}nm {start:d} {delta:d} {4:d}nm]\n'.format(
-            *self.mm_to_geda(cx, cy, half_width, half_height, self.silkwidth),
+            *self.mm_to_geda(cx, cy, half_width, half_height, width),
             start=int(round(start)), delta=int(round(delta))
         )
 
-    def silk_arc(self, x1, y1, x2, y2, angle, layer = None):
+    def silk_arc(self, x1, y1, x2, y2, angle, layer = 'F.SilkS', width = 0.15):
+        if "x" in self.mirror:
+            x1 *= -1.0
+            x2 *= -1.0
+        if "y" in self.mirror:
+            y1 *= -1.0
+            y2 *= -1.0
         dx, dy = x1-x2, y1-y2
         alpha = math.radians(angle)
         d = math.sqrt(dx*dx + dy*dy)
@@ -140,10 +158,14 @@ class Generator(BaseGenerator):
         # start angle
         start = math.degrees(math.atan2(y1-cy, x1-cx))
 
-        self._silk_arc(cx, cy, r, r, start, angle)
+        self._silk_arc(cx, cy, r, r, start, angle, width)
 
-    def silk_circle(self, x, y, radius):
-        self._silk_arc(x, y, radius, radius, 0, 360)
+    def silk_circle(self, x, y, radius, layer = 'F.SilkS', width = 0.15):
+        if "x" in self.mirror:
+            x *= -1.0
+        if "y" in self.mirror:
+            y *= -1.0
+        self._silk_arc(x, y, radius, radius, 0, 360, width)
 
     def finish(self):
         self.fp += ")\n"
