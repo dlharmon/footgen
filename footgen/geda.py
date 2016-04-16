@@ -26,7 +26,7 @@ import math
 masked_suppressed = False
 
 class Generator():
-    def __init__(self, part, mask_margin = None, clearance = None, zone_connect=None): # part name
+    def __init__(self, part): # part name
         self.mirror = ""
         self.clearance = 0.2
         self.silkwidth = 0.15
@@ -54,7 +54,7 @@ class Generator():
                 paste = True,
                 drill = 0,
                 mask_clearance = None,
-                clearance = 0.15,
+                clearance = None,
                 plated = True,
                 thermal = None,
                 layer=None,
@@ -68,9 +68,10 @@ class Generator():
                               "Future masked warnings suppressed".format(name))
                 masked_suppress = True
 
-
-        if not mask_clearance:
-            mask_clearance = 0.1
+        if mask_clearance == None:
+            mask_clearance = self.mask_clearance
+        if clearance == None:
+            clearance = self.clearance
 
         flags = ""
 
