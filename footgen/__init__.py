@@ -109,7 +109,8 @@ class Footgen(object):
                 silk_xsize = None,
                 silk_ysize = None,
                 silkwidth = 0.155,
-                silk_pin1 = 'circle'):
+                silk_pin1 = 'circle',
+                prefix = ''):
         """Create pads for a dual or quad SM package.
         """
 
@@ -120,7 +121,7 @@ class Footgen(object):
             x = left_x
             y = 0 - rowlen*0.5
             for padnum in range (1, 1+pinshigh):
-                self.add_pad(name = str(padnum),
+                self.add_pad(name = prefix+str(padnum),
                              x = x,
                              y = y,
                              xsize = padwidth,
@@ -131,7 +132,7 @@ class Footgen(object):
             y = rowlen*0.5
             for padnum in range (pinshigh + pinswide + 1,
                                  2*pinshigh + pinswide + 1):
-                self.add_pad(name = str(padnum),
+                self.add_pad(name = prefix+str(padnum),
                              x = x,
                              y = y,
                              xsize = padwidth,
@@ -143,7 +144,7 @@ class Footgen(object):
             x = 0 - rowlen*0.5
             y = (height+padwidth)*0.5
             for padnum in range (pinshigh+1, pinshigh+1+pinswide):
-                self.add_pad(str(padnum),
+                self.add_pad(prefix+str(padnum),
                              x = x,
                              y = y,
                              xsize = padheight,
@@ -154,7 +155,7 @@ class Footgen(object):
             y = -0.5*(height+padwidth)
             for padnum in range (2*pinshigh+pinswide+1,
                                  2*pinshigh+pinswide+1+pinswide):
-                self.add_pad(str(padnum),
+                self.add_pad(prefix+str(padnum),
                              x = x,
                              y = y,
                              xsize = padheight,
@@ -199,7 +200,8 @@ class Footgen(object):
             silk_xsize = None,
             silk_ysize = None,
             silkwidth = 0.155,
-            silk_pin1 = 'circle'):
+            silk_pin1 = 'circle',
+            prefix=''):
         """
         Generate pads for a QFN or QFP type package
         arguments:
@@ -212,6 +214,7 @@ class Footgen(object):
         pinswide - (optional, defaults to pins/4 if 0) number of pins across
         top and bottom
         square - True: use square pads, False: use rounded pads
+        prefix - prefix for pin names
         """
         if pinswide == 0:
             pinswide = pins/4
@@ -229,7 +232,8 @@ class Footgen(object):
                      silk_xsize = silk_xsize,
                      silk_ysize = silk_ysize,
                      silkwidth = 0.155,
-                     silk_pin1 = 'circle')
+                     silk_pin1 = 'circle',
+                     prefix = prefix)
 
     def so(self,
            pitch = 0,
