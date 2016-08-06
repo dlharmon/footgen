@@ -126,7 +126,7 @@ class Generator():
         if "y" in self.mirror:
             y1 *= -1.0
             y2 *= -1.0
-            self.fp += '\tElementLine [{0:d}nm {1:d}nm {2:d}nm {3:d}nm {4:d}nm]\n'.format(
+        self.fp += '\tElementLine [{0:d}nm {1:d}nm {2:d}nm {3:d}nm {4:d}nm]\n'.format(
             *self.mm_to_geda(x1, y1, x2, y2, width)
         )
 
