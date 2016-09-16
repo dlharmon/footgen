@@ -32,3 +32,9 @@ f = footgen.Footgen("FBGA96")
 f.bga(rows = 16, columns = 9, pitch = 0.8, diameter = 0.4, omit = "A4:T6")
 f.silkbox(w=9, h=13, notch=0.5)
 f.finish()
+
+# 0.4 mm
+f = footgen.Footgen('CM36')
+f.bga(rows = 6, pitch = 0.4, diameter = 0.2)
+f.silkbox(w=2.8, notch=0.25)
+f.finish()
