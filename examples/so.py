@@ -101,4 +101,10 @@ f.silkbox(h=5, w=3.9, arc=0.4)
 f.thermal_pad(w=1.7, h=2.3, pin=17, copper_expansion=0.8)
 f.via_array(columns=5, rows=6, pitch=0.6, pitchy=0.6, size=0.2, pad=0.46, pin=17, mask_clearance=-0.1, outer_only=True)
 
+# Transformer
+f = Footgen("MCL_DB1627")
+f.so(pitch = 1.27, pins = 6, width = 2.02, padheight = 0.71, padwidth = 1.02)
+f.silkbox(h=3.81, w = 1.5, arc=0.4)
+f.finish()
+
 f.finish()
