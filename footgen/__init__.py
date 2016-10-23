@@ -261,7 +261,7 @@ class Footgen(object):
             raise Exception("Error, number of pins must be even")
         left_x = -0.5*(width+padwidth)
         # left going down
-        rowlen = pitch * (pinshigh - 1)
+        rowlen = pitch * (pins/2 - 1)
         y = rowlen*-0.5
         for padnum in range (pins/2):
             self.add_pad(name = str(1+2*padnum),
