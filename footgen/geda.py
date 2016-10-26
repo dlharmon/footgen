@@ -84,13 +84,19 @@ class Generator():
             flags = 'square'
 
         if not paste:
-            flags += ", nopaste"
+            if flags != "":
+                flags += ", "
+            flags += "nopaste"
 
         if layer and "B" in layer:
-            flags += ", onsolder"
+            if flags != "":
+                flags += ", "
+            flags += "onsolder"
 
         if not plated:
-            flags += ", hole"
+            if flags != "":
+                flags += ", "
+            flags += "hole"
 
         if "x" in mirror:
             x *= -1.0
