@@ -396,6 +396,48 @@ class Footgen(object):
         self.box_corners(silkx,silky,-silkx,-silky)
         self.box_corners(-silkx,-silky,-silkx+pitch,-silky+pitch)
 
+    def dihf(self,
+            pitch,
+            pins,
+            width,
+            drill,
+            diameter,
+            silkboxwidth = 0,
+            silkboxheight = 0,
+            pin1shape="rect",
+            draw_silk=True):
+        """ like DIP, but numbered across and then down instead of counterclockwise """
+        y = -(pins*0.5-1.0)*pitch*0.5
+        x = width*0.5
+        for pinnum in range (1,1+pins,2):
+            self.add_pad(name = str(pinnum),
+                         x = x,
+                         y = y,
+                         diameter = diameter,
+                         xsize = diameter,
+                         ysize = diameter,
+                         drill = drill,
+                         shape = pin1shape if pinnum == 1 else 'circle')
+            y += pitch
+        if width != 0:
+            y = -(pins/2-1)*pitch*0.5
+            for pinnum in range (2,1+pins,2):
+                self.add_pad(name = str(pinnum),
+                         x = -x,
+                         y = y,
+                         diameter = diameter,
+                         xsize = diameter,
+                         ysize = diameter,
+                         drill = drill,
+                         shape = 'circle')
+                y += pitch
+        if draw_silk == False:
+            return
+        silky = max(pins*pitch*0.25,silkboxheight*0.5)
+        silkx = max((width+pitch)*0.5,silkboxwidth*0.5)
+        self.box_corners(silkx,silky,-silkx,-silky)
+        self.box_corners(silkx,-silky,silkx-pitch,-silky+pitch)
+
     def sip(self, pitch, pins, drill, diameter, silkboxwidth=0, silkboxheight=0, pin1shape="square", draw_silk=True):
         """ generates a single in line through hole footprint """
         self.dip(pitch = pitch,
