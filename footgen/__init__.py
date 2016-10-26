@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # footgen.py
-# Copyright (C) 2005-2013 Darrell Harmon
+# Copyright (C) 2005-2016 Darrell Harmon
+# Copyright (C) 2016 Levente Kovacs
 # Generates footprints for PCB from text description
 # The GPL applies only to the python scripts.
 # the output of the program and the footprint definition files
@@ -383,6 +384,9 @@ class Footgen(object):
                              x = x,
                              y = y,
                              diameter = diameter,
+                             xsize = diameter,
+                             ysize = diameter,
+                             drill = drill,
                              shape = 'circle')
                 y += pitch
         if draw_silk == False:
