@@ -14,6 +14,10 @@ from footgen import *
 #f.via_array(columns=1, rows=2, pitch=0.9)
 #f.finish()
 
+f = Footgen("1008")
+f.so(pitch = 0.5, width = 1.1, pins = 2, padheight = 1.5, padwidth = 0.6)
+f.finish()
+
 f = Footgen("0804_8")
 f.so(pitch = 0.5, width = 0.5, pins = 8, padheight = 0.3, padwidth = 0.4)
 f.finish()
@@ -76,16 +80,15 @@ f.so(pitch = 0.5, pins = 10, width = 3.6, padheight = 0.25, padwidth = 0.8)
 f.silkbox(h=3.0, w = 3.0, arc=0.5)
 f.finish()
 
-# Bourns ethernet transformer
-f = Footgen("PT61017")
-f.so(pitch = 1.27, pins = 16, width = 7.1, padheight = 0.75, padwidth = 1.7)
-f.silkbox(h=12.7, w = 6.9, arc=0.5)
-f.finish()
-
 # Murata DC - DC
 f = Footgen("LXDC2HL")
 f.so(pitch = 1.45, pins = 4, width = .5, padheight = 0.85, padwidth = 0.6)
 f.silkbox(h=2.7, w = 2.2, arc=0.15)
+f.finish()
+
+# Skyworks MIS
+f = Footgen("Skyworks_MIS")
+f.so(pitch = 0.73, pins = 4, width = .5, padheight = 0.3, padwidth = 0.5)
 f.finish()
 
 # resonator 2.5x2 Murata
@@ -103,4 +106,10 @@ f.finish()
 # ARM JTAG header
 f = Footgen("header_10x1.27")
 f.soh(pitch = 1.27, width = 6.3-4.8, padwidth = 2.4, padheight = 0.76, pins = 10)
+f.finish()
+
+# Ublox NEO-M8T - requires moving some pins manually post generation
+f = Footgen("NEO-M8")
+f.so(pitch = 1.1, width = 12.2 - 1.8, padwidth = 2.0, padheight = 0.8, pins = 24)
+f.silkbox(h=16.0, w = 12.2, arc=1.0)
 f.finish()
