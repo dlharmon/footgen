@@ -91,6 +91,12 @@ f = Footgen("Skyworks_MIS")
 f.so(pitch = 0.73, pins = 4, width = .5, padheight = 0.3, padwidth = 0.5)
 f.finish()
 
+# Anaren 0805
+f = Footgen("anaren_0805_6")
+f.so(pitch = 0.65, pins = 6, width = 0.76, padheight = 0.3, padwidth = 0.3)
+f.silkbox(h=2.04, w = 1.29, arc=0.2)
+f.finish()
+
 # resonator 2.5x2 Murata
 f = Footgen("resonator_2.5.2")
 f.so(pitch = 1.0, pins = 6, width = 1.0, padheight = 0.5, padwidth = 0.6)
