@@ -169,6 +169,9 @@ class Generator():
         self.fp += "  (fp_line (start {:.6f} {:.6f}) (end {:.6f} {:.6f}) (layer {}) (width {:.6f}))\n".format(
             x1, y1, x2, y2, layer, width)
     def silk_arc(self, x1, y1, x2, y2, angle, layer = 'F.SilkS', width = 0.15):
+        # x1,y1 is the center of the circle that is the basis of the arc
+        # x2,y2 is the starting point of the arc
+        # angle is the clock wise length of the arc
         if "x" in self.mirror:
             x1 *= -1.0
             x2 *= -1.0

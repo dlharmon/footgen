@@ -143,27 +143,23 @@ class Generator():
         )
 
     def silk_arc(self, x1, y1, x2, y2, angle, layer = 'F.SilkS', width = 0.15):
+        # x1,y1 is the center of the circle that is the basis of the arc
+	# x2,y2 is the starting point of the arc
+        # angle is the clock wise length of the arc
         if "x" in self.mirror:
             x1 *= -1.0
             x2 *= -1.0
         if "y" in self.mirror:
             y1 *= -1.0
             y2 *= -1.0
-        dx, dy = x1-x2, y1-y2
-        alpha = math.radians(angle)
-        d = math.sqrt(dx*dx + dy*dy)
+
+        dx, dy = x2-x1, y2-y1
 
         # radius of the circle of which the arc is a part
-        r = d / (2.0 * math.sin(math.pi - alpha/2))
-        H = d / math.tan(math.pi - alpha/2)
-
-        # center point
-        cx, cy = (x1 + x2)/2.0 - H*dy/d, (x1 + y2)/2.0 + H*dx/d
-
+        r = math.sqrt(dx*dx + dy*dy)
         # start angle
-        start = math.degrees(math.atan2(y1-cy, x1-cx))
-
-        self._silk_arc(cx, cy, r, r, start, angle, width)
+        start = math.degrees(math.atan2(dy, dx))
+        self._silk_arc(x1, y1, r, r, start, angle, width)
 
     def silk_circle(self, x, y, radius, layer = 'F.SilkS', width = 0.15):
         if "x" in self.mirror:
