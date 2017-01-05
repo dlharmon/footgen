@@ -2,8 +2,8 @@
 
 from footgen import *
 
-pins = [14,16,20]
-height = [5,5,6.6]
+pins = [14, 16, 20, 24]
+height = [5.0, 5.0, 6.6, 7.80]
 
 for i in range(len(pins)):
     f = Footgen("TSSOP-{}".format(pins[i]))
