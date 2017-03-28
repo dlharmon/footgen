@@ -18,9 +18,9 @@ f.silkbox(w=27, notch=0.75)
 f.finish()
 
 # 0.8 mm BGAs
-bga_names = ["CLG225", "CLG400"]
-bga_columns = [15, 20]
-bga_sizes = [13,17]
+bga_names = ["TFBGA100", "CLG225", "CLG400"]
+bga_columns = [10, 15, 20]
+bga_sizes = [9,13,17]
 for i in range(len(bga_names)):
     f = footgen.Footgen(bga_names[i])
     f.bga(rows = bga_columns[i], pitch = 0.8, diameter = 0.4)
