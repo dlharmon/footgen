@@ -57,6 +57,14 @@ f.thermal_pad(2.6, pin=25)
 f.via_array(columns=3, pitch=1.0, size=0.2, pad=0.5, pin=25)
 f.finish()
 
+# Dual pad QFN 24 - Analog Devices ADP2384
+f = Footgen("CP-24-12")
+f.qfn(pitch = 0.5, pins = 24, width = 3.2, padheight = 0.25, padwidth = 0.6, silk_xsize = 4.0)
+f.thermal_pad(w=2.6, h=1.3, position=[0, -0.65], dots=[2,1], pin=25, coverage=0.6)
+f.thermal_pad(w=2.6, h=0.85, position=[0, 0.875], dots=[2,1], pin=26, coverage=0.6)
+f.via_array(columns=3, rows=1, pitch=1.0, size=0.2, pad=0.5, pin=25, position = [0,-0.65])
+f.finish()
+
 f = Footgen("QFN28_4x5")
 f.qfn(pitch = 0.5, width=3.15, height=4.15, padheight=0.25, padwidth=0.7, pins = 28, pinswide = 6, silk_xsize = 4.0, silk_ysize = 5.0)
 f.thermal_pad(w=2.6, h=3.6, pin=29, copper_expansion=0.1)
