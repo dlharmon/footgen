@@ -64,8 +64,8 @@ class Footgen(object):
         for x in range(dots[0]):
             for y in range(dots[1]):
                 self.add_pad(name = str(pin),
-                             x = x*dotsizex + offsetx,
-                             y = y*dotsizey + offsety,
+                             x = position[0] + x*dotsizex + offsetx,
+                             y = position[1] + y*dotsizey + offsety,
                              xsize = dotsizex*scale,
                              ysize = dotsizey*scale)
 
