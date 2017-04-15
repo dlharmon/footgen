@@ -21,7 +21,7 @@ for n in range(2,15):
 
     for i in [-1,1]:
         f.add_pad(name = str(n+1) if i==1 else str(n+2),
-                  x = 0.5*(11.04 + n*2.0)*i,
+                  x = 0.5*(7.04 + n*2.0)*i,
                   y = 0,
                   xsize = 2.3,
                   ysize = 3.3,
