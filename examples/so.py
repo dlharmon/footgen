@@ -119,3 +119,9 @@ f = Footgen("NEO-M8")
 f.so(pitch = 1.1, width = 12.2 - 1.8, padwidth = 2.0, padheight = 0.8, pins = 24)
 f.silkbox(h=16.0, w = 12.2, arc=1.0)
 f.finish()
+
+# 5x7 mm 6 pin oscillator
+f = Footgen("OSC_5x7_6")
+f.so(pitch = 2.54, pins = 6, width = 2.54, padheight = 1.5, padwidth = 1.6)
+f.silkbox(h=7, w = 1.8, arc=0.5)
+f.finish()
