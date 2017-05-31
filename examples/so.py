@@ -62,6 +62,15 @@ f.so(pitch = 0.65, pins = 8, width = 3.2, padheight = 0.38, padwidth = 1.1)
 f.silkbox(h=3.1, w = 2.5, arc=0.5)
 f.finish()
 
+f = Footgen("MSOP-8G")
+f.so(pitch = 0.65, pins = 8, width = 3.2, padheight = 0.38, padwidth = 1.1)
+f.silkbox(h=3.1, w = 2.5, arc=0.5)
+f.thermal_pad(w=1.6, h=2.4, pin=9, copper_expansion=0.4, dots=[1,1], coverage=0.9)
+f.via_array(columns=3, rows=7, pitch=1.05, pitchy = 0.5, size=0.2, pad=0.5, pin=9,
+            mask_clearance = -0.1,
+            outer_only=True)
+f.finish()
+
 f = Footgen("FPC40")
 f.so(pitch = 0.5, pins = 80, width = 3.2, padheight = 0.3, padwidth = 1.2)
 f.finish()

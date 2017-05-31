@@ -95,6 +95,12 @@ f.thermal_pad(2.7, dots=[2,2])
 f.via_array(columns=3, pitch=1.1, size=0.2, pad=0.5)
 f.finish()
 
+# Minicircuits MC1630-1
+f = Footgen("MCL_MC1630-1")
+f.so(pitch = 0.65, pins = 6, width = 1.2, padheight = 0.35, padwidth = 0.7)
+f.thermal_pad(w=0.65, h=1.25, dots=[1,1], pin=7)
+f.finish()
+
 f = Footgen("LQFP48")
 f.qfn(pitch = 0.5, pins = 48, width = 7.5, padheight = 0.25, padwidth = 0.9, silk_xsize = 7.0)
 f.finish()
