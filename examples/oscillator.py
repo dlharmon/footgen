@@ -6,6 +6,10 @@ f = Footgen("Oscillator_5x3.2")
 f.so(pitch = 2.49+1.35, pins = 4, width = 1.27, padheight = 1.35, padwidth = 1.27)
 f.finish()
 
+f = Footgen("osc_3.2x2.5")
+f.so(pitch = 2.3, pins = 4, width = 0.9, padheight = 1.0, padwidth = 0.9)
+f.finish()
+
 f = Footgen("osc_2.5x2")
 f.so(pitch = 1.9, pins = 4, width = 0.5, padheight = 1.1, padwidth = 1.0)
 f.finish()
