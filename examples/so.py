@@ -71,6 +71,12 @@ f.via_array(columns=3, rows=7, pitch=1.05, pitchy = 0.5, size=0.2, pad=0.5, pin=
             outer_only=True)
 f.finish()
 
+# TI LP5912 (added lines, pin 1 marker manually)
+f = Footgen("WSON-6_2x2")
+f.so(pitch = 0.65, pins = 6, width = 1.5, padheight = 0.3, padwidth = 0.45)
+f.thermal_pad(w=1.0, h=1.6, pin=7)
+f.finish()
+
 f = Footgen("FPC40")
 f.so(pitch = 0.5, pins = 80, width = 3.2, padheight = 0.3, padwidth = 1.2)
 f.finish()
