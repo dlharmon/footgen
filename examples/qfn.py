@@ -33,6 +33,12 @@ f.thermal_pad(3.8, pin=41)
 f.via_array(columns=4, pitch=1.25, pin=41, pad=0.5, size=0.2, outer_only=True)
 f.finish()
 
+f = Footgen("QFN40_LMX2594")
+f.qfn(pitch = 0.5, pins = 40, width = 5.2, padheight = 0.254, padwidth = 0.60, silk_xsize = 6.0)
+f.thermal_pad(4.5, pin=41)
+f.via_array(columns=5, pitch=1.0, pin=41, pad=0.5, size=0.2)
+f.finish()
+
 f = Footgen("QFN64_9x9")
 f.qfn(pitch = 0.5, pins = 64, width = 8.2, padheight = 0.254, padwidth = 0.60, silk_xsize = 9.0)
 f.thermal_pad(6.0, pin=65, copper_expansion = 0.4)
