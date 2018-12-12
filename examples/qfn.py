@@ -82,6 +82,12 @@ f.thermal_pad(2.6, pin=25)
 f.via_array(columns=3, pitch=1.0, size=0.2, pad=0.5, pin=25)
 f.finish()
 
+# Diodes Inc V-QFN4040-17, pins on 3 sides only, manual edits required
+f = Footgen("V-QFN4040-17")
+f.qfn(pitch = 0.5, pins = 22, pinswide=5, width = 3.2, height = 3.7, padheight = 0.25, padwidth = 0.6, silk_xsize = 4.0, silk_ysize= 4.5)
+f.thermal_pad(w=2.5, h=2.875, position=[0, -0.0625], dots=[2,2], pin=18, coverage=0.5)
+f.finish()
+
 # SiLabs EFM32
 f = Footgen("QFN24_5x5")
 f.qfn(pitch = 0.65, pins = 24, width = 4.2, padheight = 0.3, padwidth = 0.6, silk_xsize = 5.0)
