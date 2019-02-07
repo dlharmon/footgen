@@ -158,6 +158,23 @@ class Generator():
         polystring += ") (layer {}) (width {:.6f}) )\n".format(layer, width)
         self.fp += polystring
 
+    def add_custom_pad(self, name, x, y, polygons, layer="F.Cu"):
+        self.fp += "(pad {} connect custom (at {} {}) (size 0.15 0.15) (layers {})\n".format(
+            name, x, y, layer)
+        self.fp += "(options (clearance outline) (anchor circle))\n"
+        self.fp += "(primitives\n"
+        for polygon in polygons:
+            polygon -= [x,y]
+            self.fp += "(gr_poly (pts\n"
+            for p in polygon:
+                if "x" in self.mirror:
+                    p[0] *= -1.0
+                if "y" in self.mirror:
+                    p[1] *= -1.0
+                self.fp += "\t(xy {:.6f} {:.6f})\n".format(p[0], p[1])
+            self.fp += ") (width 0))\n"
+        self.fp += "))\n"
+
     # draw silkscreen line
     def silk_line(self, x1, y1, x2, y2, layer='F.SilkS', width = 0.15):
         if "x" in self.mirror:
