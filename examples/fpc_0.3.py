@@ -74,5 +74,6 @@ def fpc_socket(npins, name):
         g.silk_line(x, 0.5, x, -1.1, width=0.1)
     f.finish()
 
-fpc_tail(21, "fpc_0.3_21_tail")
-fpc_socket(21, "fpc_0.3_21_socket")
+for n in [13, 15, 21, 25, 31, 33, 39, 45]:
+    fpc_tail(n, "fpc_0.3_{}_tail".format(n))
+    fpc_socket(n, "fpc_0.3_{}_socket".format(n))
